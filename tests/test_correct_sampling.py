@@ -39,5 +39,6 @@ class CorrectSamplingTest(unittest.TestCase):
         print(f"Mean {mean}")
         self.assertAlmostEqual(0.5, mean, delta=0.05)
 
+
 if __name__ == "__main__":
     unittest.main()
