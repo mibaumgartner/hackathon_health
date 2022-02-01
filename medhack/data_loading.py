@@ -3,7 +3,7 @@ from pathlib import Path
 from medhack.dataset import CovidImageDataset
 import albumentations as A
 import pytorch_lightning as pl
-from albumentations.pytorch import ToTensorV2
+
 from pytorch_lightning.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
 from torch.utils.data import DataLoader, WeightedRandomSampler
 
@@ -13,7 +13,7 @@ std = ()  # Wait for Gregor
 
 class BasicDataModule(pl.LightningDataModule):
     def __init__(self, root_dir: Path):
-
+        super(BasicDataModule, self).__init__()
         train_csv = "train.csv"
         val_csv = "valid.csv"
 
@@ -30,7 +30,6 @@ class BasicDataModule(pl.LightningDataModule):
                 A.Resize(256, 256),
                 A.RandomCrop(224, 224),
                 A.HorizontalFlip(),
-                ToTensorV2(),
             ]
         )
         val_transforms = A.Compose(
@@ -38,7 +37,6 @@ class BasicDataModule(pl.LightningDataModule):
                 A.Resize(256, 256),
                 A.RandomCrop(224, 224),
                 A.HorizontalFlip(),
-                ToTensorV2(),
             ]
         )
         self.train_dataset = CovidImageDataset(train_csv, root_dir, train_transforms)
