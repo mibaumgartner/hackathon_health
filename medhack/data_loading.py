@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import cv2
+
 from medhack.dataset import CovidImageDataset
 import albumentations as A
 import pytorch_lightning as pl
@@ -27,15 +29,20 @@ class BasicDataModule(pl.LightningDataModule):
 
         train_transforms = A.Compose(
             [
-                A.Resize(256, 256),
-                A.RandomCrop(224, 224),
                 A.HorizontalFlip(),
+                A.Affine(scale=(0.95, 1.10),  # 0.5 == 50% zoomed out
+                         rotate=10,
+                         shear=(10, 10),
+                         interpolation=cv2.INTER_CUBIC,
+                         mode = cv2.BORDER_REFLECT,
+                         p=0.2
+                ),
+                A.RandomContrast(0.1),
+                A.GaussianBlur()
             ]
         )
         val_transforms = A.Compose(
             [
-                A.Resize(256, 256),
-                A.RandomCrop(224, 224),
                 A.HorizontalFlip(),
             ]
         )
