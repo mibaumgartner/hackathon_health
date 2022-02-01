@@ -25,19 +25,19 @@ class ClassificationModule(pl.LightningModule):
         return self.model(imgs)
 
     def training_step(self, batch, batch_idx: Optional[int] = None):
-        imgs, labels = batch # TODO: adjust accordingly
-        
+        imgs, labels = batch  # TODO: adjust accordingly
+
         preds = self.model(imgs)
         loss = self.loss(preds, labels)
 
         acc = (preds.argmax(dim=-1) == labels).float().mean()
         self.log("train/acc", acc, on_step=False, on_epoch=True)
         self.log("train/loss", loss)
-        return loss 
+        return loss
 
     def validation_step(self, batch, batch_idx: Optional[int] = None):
         imgs, labels = batch  # TODO: adjust accordingly
-        
+
         preds = self.model(imgs).argmax(dim=-1)
         acc = (labels == preds).float().mean()
         self.log("val/acc", acc)
