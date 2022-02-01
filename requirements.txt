@@ -6,3 +6,8 @@ pandas>=1.2.5
 numpy>=1.20.1
 pillow>=8.1.2
 requests
+seaborn
+matplotlib
+jupyterlab
+timm
+pytest
