@@ -21,7 +21,7 @@ with open(os.path.join(root_dir, csv_train), "r") as f:
     for row in csv_reader:
         data_label_pairs_train.append(
             (os.path.join(root_dir, "imgs", row[0]), 0 if row[1] == "negative" else 1))
-        
+
 data_label_pairs_val: List[Tuple[str, int]] = []
 with open(os.path.join(root_dir, csv_val), "r") as f:
     csv_reader = csv.reader(f)
@@ -29,11 +29,11 @@ with open(os.path.join(root_dir, csv_val), "r") as f:
     for row in csv_reader:
         data_label_pairs_val.append(
             (os.path.join(root_dir, "imgs", row[0]), 0 if row[1] == "negative" else 1))
-        
-img_filenames_train_val = [tup[0] for tup in data_label_pairs_train] + [tup[0] for tup in data_label_pairs_val]        
+
+img_filenames_train_val = [tup[0] for tup in data_label_pairs_train] + [tup[0] for tup in data_label_pairs_val]
 
 transforms = Compose(
-    [Resize((224,224)),
+    [Resize((224, 224)),
      ToTensor()]
 )
 
@@ -41,4 +41,4 @@ transforms = Compose(
 for file in tqdm(img_filenames_train_val):
     img = Image.open(file)
     npy_arr = transforms(img).numpy()
-    np.save(os.path.join(target_dir, "imgs", file.split("/")[-1][:-4]+".npy"), npy_arr)
+    np.save(os.path.join(target_dir, "imgs", file.split("/")[-1][:-4] + ".npy"), npy_arr)
