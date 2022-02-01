@@ -1,9 +1,10 @@
 import csv
-import os
 from pathlib import Path
 from typing import List, Tuple
 
 import albumentations as A
+from albumentations.pytorch import ToTensorV2
+import cv2
 import numpy as np
 import torch
 from torch.utils.data import Dataset
@@ -15,7 +16,7 @@ class CovidImageDataset(Dataset):
         :param csv_file: Name of the csv file ("train.csv" or "valid.csv")
         :param root_dir: Path to the root directory of the data.
          Expects: "train.csv" in there and the direcotry "imgs" in root_dir/imgs
-        :param transform: albumentations transformations
+        :param transform: albumentations transformations -- ToTensorV2 already included
         (Has to be preprocessing trans for test cases)
         """
 
@@ -45,9 +46,11 @@ class CovidImageDataset(Dataset):
         data = self.data_label_pairs[idx]
         image: np.ndarray = np.load(data[0])
         label: int = data[1]
-        image_torch = self.transform(image)
+        gray_image_np = self.transform(image)
+        rgb_image_np = cv2.cvtColor(gray_image_np, cv2.COLOR_GRAY2RGB)
+        rgb_image_torch = A.Compose([ToTensorV2()])(rgb_image_np)
 
-        return image_torch, label
+        return rgb_image_torch, label
 
     def get_data_weights(self) -> List[float]:
         labels: List[int] = [d[1] for d in self.data_label_pairs]
