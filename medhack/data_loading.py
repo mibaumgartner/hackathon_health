@@ -16,7 +16,7 @@ class BasicDataModule(pl.LightningDataModule):
 
         train_csv = "train.csv"
         val_csv = "valid.csv"
-        
+
         # Hyperparameters of Dataloader
         self.batch_size: int = 256
         self.shuffle: bool = True
@@ -24,8 +24,7 @@ class BasicDataModule(pl.LightningDataModule):
         self.persistent_workers: bool = True  # Probably useful
         self.num_workers = 0
         self.pin_memory = True
-        
-        
+
         train_transforms = A.Compose(
             [
                 A.Resize(256, 256),
@@ -44,11 +43,10 @@ class BasicDataModule(pl.LightningDataModule):
         )
         self.train_dataset = CovidImageDataset(train_csv, root_dir, train_transforms)
         self.valid_dataset = CovidImageDataset(val_csv, root_dir, val_transforms)
-        
+
         self.training_data_sampler = WeightedRandomSampler(self.train_dataset.get_data_weights(),
                                                            num_samples=len(self.train_dataset),
                                                            replacement=True)
-        
 
     def train_dataloader(self) -> TRAIN_DATALOADERS:
         return DataLoader(self.train_dataset, self.batch_size,
