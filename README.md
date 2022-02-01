@@ -97,12 +97,12 @@ Follow either the venv or the conda instructions to create a virtual environment
 	source /hkfs/work/workspace/scratch/im9193-conda/conda/etc/profile.d/conda.sh
 	
 	# create new environment in your workspace (you can specifiy any python version you want)
-	conda create --prefix /hkfs/work/workspace/scratch/im9193-<YOUR_GROUP_NAME>/health_baseline_conda_env python==3.8.0
+	conda create --prefix /hkfs/work/workspace/scratch/im9193-H1/health_baseline_conda_env python==3.8.0
 	
 	# activate env and install requirements
-	conda activate /hkfs/work/workspace/scratch/im9193-<YOUR_GROUP_NAME>/health_baseline_conda_env
+	conda activate /hkfs/work/workspace/scratch/im9193-H1/health_baseline_conda_env
 	pip install -U pip
-	pip install -r /hkfs/work/workspace/scratch/im9193-<YOUR_GROUP_NAME>/AI-HERO-Health/requirements.txt
+	pip install -r /hkfs/work/workspace/scratch/im9193-H1/AI-HERO-Health/requirements.txt
 
 
 # Training on HAICORE
@@ -173,3 +173,7 @@ For calculating the groups' final scores the mentioned files need to work. That 
 To make the submission FAIR you additionally have to provide your code on Github (with a requirements file that reproduces your full environment), and your weights uploaded to Zenodo.
 You can complete your submission here: https://ai-hero-hackathon.de/.
 We will verify your results by also downloading everything from Github and Zenodo to a clean new workspace and check whether the results match.
+
+
+# Conda Activate
+conda activate /hkfs/work/workspace/scratch/im9193-H1/health_baseline_conda_env
