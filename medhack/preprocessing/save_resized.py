@@ -21,5 +21,7 @@ with open(os.path.join(root_dir, csv_val), "r") as f:
         data_label_pairs_val.append(
             (os.path.join(root_dir, "imgs", row[0]), 0 if row[1] == "negative" else 1))
         
+img_filenames_train_val = [tup[0] for tup in data_label_pairs_train] + [tup[0] for tup in data_label_pairs_val]        
+
 import IPython
 IPython.embed()
