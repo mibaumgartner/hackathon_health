@@ -48,11 +48,11 @@ class CovidImageDataset(Dataset):
         image_torch = self.transform(image)
 
         return image_torch, label
-    
+
     def get_data_weights(self) -> List[float]:
         labels: List[int] = [d[1] for d in self.data_label_pairs]
         positives = sum(labels)
         total_samples = len(labels)
-        prob_positive = 1 - positives/total_samples
+        prob_positive = 1 - positives / total_samples
         prob_negatives = positives / total_samples
         return [prob_positive if l == 1 else prob_negatives for l in labels]
