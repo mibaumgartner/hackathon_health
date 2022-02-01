@@ -11,3 +11,5 @@ matplotlib
 jupyterlab
 timm
 pytest
+albumentations
+opencv-python
