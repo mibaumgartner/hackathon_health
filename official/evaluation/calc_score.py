@@ -7,10 +7,15 @@ from argparse import ArgumentParser
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('--preds', type=str,
-                        default='/hkfs/work/workspace/scratch/im9193-health_challenge_baseline/submission_test/predictions.csv')
+    parser.add_argument(
+        '--preds',
+        type=str,
+        default='/hkfs/work/workspace/scratch/im9193-health_challenge_baseline/submission_test/predictions.csv')
     parser.add_argument('--gt', type=str, default='/hkfs/work/workspace/scratch/im9193-health_challenge/data/valid.csv')
-    parser.add_argument('--save_dir', type=str, default='/hkfs/work/workspace/scratch/im9193-health_challenge_baseline/submission_test')
+    parser.add_argument(
+        '--save_dir',
+        type=str,
+        default='/hkfs/work/workspace/scratch/im9193-health_challenge_baseline/submission_test')
     args = parser.parse_args()
 
     print('Calculating Accuracy')

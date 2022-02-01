@@ -44,7 +44,7 @@ class CovidImageDataset(Dataset):
                 transforms.Resize((224, 224)),
                 transforms.ToTensor(),
                 transforms.Normalize(0.8180, 0.1748)
-                ])(image)
+            ])(image)
 
         sample = [image, label] if self.df_contains_label else [image, img_name]
 

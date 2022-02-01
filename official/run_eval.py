@@ -29,8 +29,11 @@ def predict(model, device, test_loader):
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument("--weights_path", type=str, default='/hkfs/work/workspace/scratch/im9193-health_challenge_baseline/saved_models/vgg_baseline.pt',
-                        help="Model weights path")  # TODO: adapt to your model weights path in the bash script
+    parser.add_argument(
+        "--weights_path",
+        type=str,
+        default='/hkfs/work/workspace/scratch/im9193-health_challenge_baseline/saved_models/vgg_baseline.pt',
+        help="Model weights path")  # TODO: adapt to your model weights path in the bash script
     parser.add_argument("--save_dir", type=str, help='Directory where weights and results are saved',
                         default='/hkfs/work/workspace/scratch/im9193-health_challenge_baseline/submission_test')
     parser.add_argument("--data_dir", type=str, help='Directory containing the data you want to predict',
@@ -66,7 +69,13 @@ if __name__ == '__main__':
 
     predictions = predict(model, device, testloader)
     flattened_preds = [np.concatenate(i) for i in list(zip(*predictions))]
-    pd.DataFrame(data={'image': flattened_preds[0], 'prediction': flattened_preds[1]}).to_csv(os.path.join(save_dir, 'predictions.csv'), index=False)
+    pd.DataFrame(
+        data={
+            'image': flattened_preds[0],
+            'prediction': flattened_preds[1]}).to_csv(
+        os.path.join(
+            save_dir,
+            'predictions.csv'),
+        index=False)
 
     print('Done! The result is saved in {}'.format(save_dir))
-
