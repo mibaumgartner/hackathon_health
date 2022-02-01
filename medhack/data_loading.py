@@ -50,7 +50,7 @@ class BasicDataModule(pl.LightningDataModule):
         )
         self.train_dataset = CovidImageDataset(train_csv, root_dir, train_transforms)
         self.valid_dataset = CovidImageDataset(val_csv, root_dir, val_transforms)
-       
+
         self.train_dataset[0]
         self.training_data_sampler = WeightedRandomSampler(
             self.train_dataset.get_data_weights(),
