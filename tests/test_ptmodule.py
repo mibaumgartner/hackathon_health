@@ -5,7 +5,7 @@ def test_dummy_input():
     import torch
 
     model = BaselineClassification()
-    
+
     batch = (
         torch.rand(4, 3, 64, 64),
         torch.randint(0, 2, (4,))

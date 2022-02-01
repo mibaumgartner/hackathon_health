@@ -13,13 +13,13 @@ with open(os.path.join(root_dir, csv_train), "r") as f:
     for row in csv_reader:
         data_label_pairs_train.append(
             (os.path.join(root_dir, "imgs", row[0]), 0 if row[1] == "negative" else 1))
-        
+
 data_label_pairs_val: List[Tuple[str, int]] = []
 with open(os.path.join(root_dir, csv_val), "r") as f:
     csv_reader = csv.reader(f)
     for row in csv_reader:
         data_label_pairs_val.append(
             (os.path.join(root_dir, "imgs", row[0]), 0 if row[1] == "negative" else 1))
-        
+
 import IPython
 IPython.embed()
