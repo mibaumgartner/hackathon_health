@@ -22,7 +22,6 @@ def read_file(file):
         content = f.read()
     return content
 
-
 requirements = resolve_requirements(os.path.join(os.path.dirname(__file__),
                                                  'requirements.txt'))
 
@@ -31,18 +30,18 @@ license = read_file(os.path.join(os.path.dirname(__file__), "LICENSE"))
 
 
 setup(
-    name='python_template',
+    name='medhack',
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     packages=find_packages(),
     # url='path/to/url',
-    test_suite="unittest",
+    test_suite="pytest",
     long_description=readme,
     long_description_content_type='text/markdown',
     install_requires=requirements,
     tests_require=["coverage"],
-    python_requires=">=3.7",
-    author="Michael Baumgartner",
-    author_email="michael.baumgartner@rwth-aachen.de",
+    python_requires=">=3.8",
+    # author="FridgeReloaded",
+    # author_email="fridge.reloaded@dkfz.de",
     license=license,
 )
