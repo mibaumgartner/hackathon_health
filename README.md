@@ -176,4 +176,9 @@ We will verify your results by also downloading everything from Github and Zenod
 
 
 # Conda Activate
+source /hkfs/work/workspace/scratch/im9193-conda/conda/etc/profile.d/conda.sh
 conda activate /hkfs/work/workspace/scratch/im9193-H1/health_baseline_conda_env
+
+
+# Data
+/hkfs/work/workspace/scratch/im9193-health_challenge
