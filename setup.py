@@ -22,6 +22,7 @@ def read_file(file):
         content = f.read()
     return content
 
+
 requirements = resolve_requirements(os.path.join(os.path.dirname(__file__),
                                                  'requirements.txt'))
 
