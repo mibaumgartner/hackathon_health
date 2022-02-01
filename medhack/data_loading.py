@@ -9,8 +9,8 @@ import pytorch_lightning as pl
 from pytorch_lightning.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
 from torch.utils.data import DataLoader, WeightedRandomSampler
 
-mean = ()  # Gimme for Gregor
-std = ()  # Wait for Gregor
+mean = 0.8184206354986654  # Gimme for Gregor
+std = 0.03884859786640268  # Wait for Gregor
 
 
 class BasicDataModule(pl.LightningDataModule):
@@ -20,15 +20,16 @@ class BasicDataModule(pl.LightningDataModule):
         val_csv = "valid.csv"
 
         # Hyperparameters of Dataloader
-        self.batch_size: int = 256
+        self.batch_size: int = 32
         self.shuffle: bool = True
         self.drop_last: bool = False
         self.persistent_workers: bool = True  # Probably useful
-        self.num_workers = 0
+        self.num_workers = 8
         self.pin_memory = True
 
         train_transforms = A.Compose(
             [
+                A.Normalize(mean, std),
                 A.HorizontalFlip(),
                 A.Affine(scale=(0.95, 1.10),  # 0.5 == 50% zoomed out
                          rotate=10,
@@ -43,12 +44,14 @@ class BasicDataModule(pl.LightningDataModule):
         )
         val_transforms = A.Compose(
             [
+                A.Normalize(mean, std),
                 A.HorizontalFlip(),
             ]
         )
         self.train_dataset = CovidImageDataset(train_csv, root_dir, train_transforms)
         self.valid_dataset = CovidImageDataset(val_csv, root_dir, val_transforms)
-
+       
+        self.train_dataset[0]
         self.training_data_sampler = WeightedRandomSampler(
             self.train_dataset.get_data_weights(),
             num_samples=len(self.train_dataset),
@@ -59,7 +62,7 @@ class BasicDataModule(pl.LightningDataModule):
         return DataLoader(
             self.train_dataset,
             self.batch_size,
-            self.shuffle,
+            shuffle=False,
             sampler=self.training_data_sampler,
             num_workers=self.num_workers,
             pin_memory=self.pin_memory,
@@ -74,7 +77,7 @@ class BasicDataModule(pl.LightningDataModule):
         return DataLoader(
             self.valid_dataset,
             self.batch_size,
-            self.shuffle,
+            shuffle=False,
             num_workers=self.num_workers,
             pin_memory=self.pin_memory,
             drop_last=False,

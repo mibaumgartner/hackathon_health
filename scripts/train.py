@@ -8,9 +8,12 @@ from medhack.data_loading import BasicDataModule
 from medhack.ptmodule.module import (
     BaselineClassification,
 )
+import cv2
 
-GPUS = 1
-ACCELERATOR = "gpu"
+cv2.setNumThreads(0)
+cv2.ocl.setUseOpenCL(False)
+GPUS = None
+ACCELERATOR = "cpu"
 PRECISION = 16
 BENCHMARK = True
 DETERMINISTIC = False
@@ -36,9 +39,11 @@ def main():
     else:
         train_dir.mkdir(parents=True)
 
+    print("Setup data")
     datamodule = BasicDataModule(root_dir=root_dir)
     module = BaselineClassification()
 
+    print("Setup Callbacks and Logging")
     callbacks = []
     checkpoint_cb = ModelCheckpoint(
         dirpath=train_dir,
@@ -54,10 +59,12 @@ def main():
     log_dir.mkdir()
     mllogger = TensorBoardLogger(
         save_dir=log_dir,
+        name=name,
     )
 
+    print("Start Training")
     trainer = pl.Trainer(
-        gpus=list(range(GPUS)) if GPUS > 1 else GPUS,
+        gpus=GPUS,
         accelerator=ACCELERATOR,
         precision=PRECISION,
         benchmark=BENCHMARK,
@@ -70,11 +77,10 @@ def main():
         num_sanity_val_steps=10,
         weights_summary='full',
         # plugins=plugins,
-        terminate_on_nan=True,
         move_metrics_to_cpu=False,
     )
     trainer.fit(module, datamodule=datamodule)
 
 
 if __name__ == "__main__":
-    pass
+    main()

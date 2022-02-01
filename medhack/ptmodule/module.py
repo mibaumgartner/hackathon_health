@@ -36,29 +36,28 @@ class ClassificationModule(pl.LightningModule):
         self.model = self.create_model()
         self.loss = self.create_loss()
 
-        # TODO: single channel vs gray scale multichannel
         self.example_input_array = torch.zeros((1, 3, 32, 32), dtype=torch.float32)
 
     def forward(self, imgs):
         return self.model(imgs)
 
     def training_step(self, batch, batch_idx: Optional[int] = None):
-        imgs, labels = batch  # TODO: adjust accordingly
+        imgs, labels = batch
 
         preds = self.model(imgs)
         loss = self.loss(preds, labels)
 
         acc = (preds.argmax(dim=-1) == labels).float().mean()
-        self.log("train/acc", acc, on_step=False, on_epoch=True)
-        self.log("train/loss", loss)
+        self.log("train/acc", acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        self.log("train/loss", loss, prog_bar=True, logger=True)
         return loss
 
     def validation_step(self, batch, batch_idx: Optional[int] = None):
-        imgs, labels = batch  # TODO: adjust accordingly
+        imgs, labels = batch
 
         preds = self.model(imgs).argmax(dim=-1)
         acc = (labels == preds).float().mean()
-        self.log("val/acc", acc)
+        self.log("val/acc", acc, prog_bar=True, logger=True)
 
     @abstractmethod
     def create_model(self) -> torch.nn.Module:
@@ -81,10 +80,10 @@ class BaselineClassification(ClassificationModule):
         return 2
 
     def create_model(self) -> torch.nn.Module:
-        model = timm.create_model('resnet18', pretrained=True, num_classes=2)
+        model = timm.create_model('resnet18', pretrained=True, num_classes=self.get_num_classes())
         return model
 
     def configure_optimizers(self):
-        optimizer = optim.AdamW(self.parameters(), **self.hparams.optimizer_hparams)
+        optimizer = optim.AdamW(self.parameters(), lr=3e-4, weight_decay=0.001, amsgrad=True)
         scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[100, 150], gamma=0.1)
         return [optimizer], [scheduler]

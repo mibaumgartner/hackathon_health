@@ -40,16 +40,18 @@ class CovidImageDataset(Dataset):
         self.transform = transform
 
     def __len__(self):
-        return len(self.info_df)
+        return len(self.data_label_pairs)
 
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, int]:
         data = self.data_label_pairs[idx]
         image: np.ndarray = np.load(data[0])
         label: int = data[1]
-        gray_image_np = self.transform(image)
-        rgb_image_np = cv2.cvtColor(gray_image_np, cv2.COLOR_GRAY2RGB)
-        rgb_image_torch = A.Compose([ToTensorV2()])(rgb_image_np)
+        # gray_image_np = np.expand_dims(self.transform(image=image)["image"], 0)
+        # rgb_image_np = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+        # rgb_image_torch = A.Compose([ToTensorV2()])(image=rgb_image_np)["image"]
 
+        rgb_image_np = self.transform(image=image)["image"].repeat(3, axis=0)
+        rgb_image_torch = torch.tensor(rgb_image_np, dtype=torch.float)
         return rgb_image_torch, label
 
     def get_data_weights(self) -> List[float]:
