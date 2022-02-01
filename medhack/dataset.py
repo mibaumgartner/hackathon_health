@@ -1,5 +1,5 @@
 import csv
-import os
+from copy import deepcopy
 from pathlib import Path
 from typing import List, Tuple
 
@@ -46,6 +46,9 @@ class CovidImageDataset(Dataset):
         image: np.ndarray = np.load(data[0])
         label: int = data[1]
         image_torch = self.transform(image)
+        image_torch = torch.stack(
+            [deepcopy(image_torch), deepcopy(image_torch), deepcopy(image_torch)], dim=0
+        )
 
         return image_torch, label
 
