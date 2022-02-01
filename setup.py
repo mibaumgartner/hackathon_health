@@ -27,7 +27,7 @@ requirements = resolve_requirements(os.path.join(os.path.dirname(__file__),
 
 readme = read_file(os.path.join(os.path.dirname(__file__), "README.md"))
 license = read_file(os.path.join(os.path.dirname(__file__), "LICENSE"))
-
+print(requirements)
 
 setup(
     name='medhack',
