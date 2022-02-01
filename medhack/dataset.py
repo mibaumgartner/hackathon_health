@@ -36,7 +36,6 @@ class CovidImageDataset(Dataset):
                 transforms.ToTensor(),
                 transforms.Normalize(0.8180, 0.1748)
             ])(image)
-
         else:
             # for validation
             image = transforms.Compose([
