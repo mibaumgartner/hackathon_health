@@ -31,8 +31,7 @@ license = read_file(os.path.join(os.path.dirname(__file__), "LICENSE"))
 
 setup(
     name='medhack',
-    version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
+    version="0.0.1",
     packages=find_packages(),
     # url='path/to/url',
     test_suite="pytest",
