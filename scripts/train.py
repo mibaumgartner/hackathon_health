@@ -15,7 +15,7 @@ PRECISION = 16
 BENCHMARK = True
 DETERMINISTIC = False
 
-TRAIN_DIR = ""
+TRAIN_DIR = "/hkfs/work/workspace/scratch/im9193-H1/checkpoints"
 ROOT_DIR = "/hkfs/work/workspace/scratch/im9193-H1/preprocessed_data"
 
 # TRAINING PARAMS

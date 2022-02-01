@@ -11,6 +11,24 @@ import torch.optim as optim
 # Template starte from:
 # https://pytorch-lightning.readthedocs.io/en/latest/notebooks/course_UvA-DL/04-inception-resnet-densenet.html
 
+# Models
+# Efficient Net
+# https://github.com/rwightman/pytorch-image-models/blob/07379c6d5dbb809b3f255966295a4b03f23af843/timm/models/efficientnet.py#L348-L351
+# https://github.com/rwightman/pytorch-image-models/blob/07379c6d5dbb809b3f255966295a4b03f23af843/timm/models/efficientnet.py#L361-L364
+# https://github.com/rwightman/pytorch-image-models/blob/07379c6d5dbb809b3f255966295a4b03f23af843/timm/models/efficientnet.py#L378-L381
+# https://github.com/rwightman/pytorch-image-models/blob/07379c6d5dbb809b3f255966295a4b03f23af843/timm/models/efficientnet.py#L322-L326
+# https://github.com/rwightman/pytorch-image-models/blob/07379c6d5dbb809b3f255966295a4b03f23af843/timm/models/efficientnet.py#L109-L110
+
+# ResNet
+# https://github.com/rwightman/pytorch-image-models/blob/07379c6d5dbb809b3f255966295a4b03f23af843/timm/models/resnet.py#L39-L41
+
+# RegNet
+# https://arxiv.org/pdf/2003.13678.pdf
+# https://github.com/rwightman/pytorch-image-models/blob/07379c6d5dbb809b3f255966295a4b03f23af843/timm/models/regnet.py#L77
+
+# MobileNetV3
+# https://github.com/rwightman/pytorch-image-models/blob/07379c6d5dbb809b3f255966295a4b03f23af843/timm/models/mobilenetv3.py#L50-L52
+
 
 class ClassificationModule(pl.LightningModule):
     def __init__(self):
