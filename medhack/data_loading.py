@@ -44,30 +44,37 @@ class BasicDataModule(pl.LightningDataModule):
         self.train_dataset = CovidImageDataset(train_csv, root_dir, train_transforms)
         self.valid_dataset = CovidImageDataset(val_csv, root_dir, val_transforms)
 
-        self.training_data_sampler = WeightedRandomSampler(self.train_dataset.get_data_weights(),
-                                                           num_samples=len(self.train_dataset),
-                                                           replacement=True)
+        self.training_data_sampler = WeightedRandomSampler(
+            self.train_dataset.get_data_weights(),
+            num_samples=len(self.train_dataset),
+            replacement=True,
+        )
 
     def train_dataloader(self) -> TRAIN_DATALOADERS:
-        return DataLoader(self.train_dataset, self.batch_size,
-                          self.shuffle, sampler=self.training_data_sampler,
-                          num_workers=self.num_workers,
-                          pin_memory=self.pin_memory,
-                          drop_last=False,
-                          persistent_workers=self.persistent_workers)
+        return DataLoader(
+            self.train_dataset,
+            self.batch_size,
+            self.shuffle,
+            sampler=self.training_data_sampler,
+            num_workers=self.num_workers,
+            pin_memory=self.pin_memory,
+            drop_last=False,
+            persistent_workers=self.persistent_workers,
+        )
 
     def test_dataloader(self) -> EVAL_DATALOADERS:
         pass
 
     def val_dataloader(self) -> EVAL_DATALOADERS:
         return DataLoader(
-            self.valid_dataset, self.batch_size,
+            self.valid_dataset,
+            self.batch_size,
             self.shuffle,
             num_workers=self.num_workers,
             pin_memory=self.pin_memory,
             drop_last=False,
-            persistent_workers=self.persistent_workers
-            )
+            persistent_workers=self.persistent_workers,
+        )
 
     def predict_dataloader(self) -> EVAL_DATALOADERS:
         pass
