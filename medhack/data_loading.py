@@ -62,7 +62,14 @@ class BasicDataModule(pl.LightningDataModule):
         pass
 
     def val_dataloader(self) -> EVAL_DATALOADERS:
-        pass
+        return DataLoader(
+            self.valid_dataset, self.batch_size,
+            self.shuffle,
+            num_workers=self.num_workers,
+            pin_memory=self.pin_memory,
+            drop_last=False,
+            persistent_workers=self.persistent_workers
+            )
 
     def predict_dataloader(self) -> EVAL_DATALOADERS:
         pass
