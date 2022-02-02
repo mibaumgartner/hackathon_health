@@ -34,7 +34,7 @@ class ClassificationModule(pl.LightningModule):
     def __init__(self, epochs: int):
         super().__init__()
         self.epochs = epochs
-        self.milestones: List[int] = [int(epochs/3), int(2*epochs/3)]
+        self.milestones: List[int] = [int(epochs / 3), int(2 * epochs / 3)]
         self.model = self.create_model()
         self.loss = self.create_loss()
 
