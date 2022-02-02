@@ -3,6 +3,7 @@ import os
 import sys
 from argparse import ArgumentParser
 from typing import List
+import itertools
 
 import numpy as np
 import pytorch_lightning as pl
@@ -43,11 +44,11 @@ class CovidInferenceImageDataset(Dataset):
     def __len__(self):
         return len(self.test_image_names)
 
-    def __getitem__(self, idx: int) -> torch.Tensor:
+    def __getitem__(self, idx: int) -> Tuple[str, torch.Tensor]:
         img_name = self.test_image_names[int(idx)]
         image = Image.open(img_name)
         image = torch.repeat_interleave(self.transform(image), 3, dim=0)
-        return image
+        return img_name, image
 
 
 if __name__ == "__main__":
@@ -133,23 +134,23 @@ if __name__ == "__main__":
 
     dataloader = torch.utils.data.DataLoader(
         dataset=dataset,
-        batch_size=64,
+        batch_size=BS,
         shuffle=False,
         num_workers=WORKERS,
         pin_memory=True,
     )
 
     predictions: List[int]
-    with torch.no_grad():
-        prediction_batches = trainer.predict(
+    with torch.inference_mode():
+        img_names, prediction_batches = trainer.predict(
             model=model,
             dataloaders=dataloader,
             return_predictions=True,
             ckpt_path=final_model_ckpt_path
         )
-        predictions = torch.cat(prediction_batches, dim=0).detach().cpu().numpy()
+        img_names = list(itertools.chain.from_iterable(img_names))
+        predictions = list(torch.cat(prediction_batches, dim=0).detach().cpu().numpy())
 
-    img_names: List[str] = dataset.test_image_names
     with open(os.path.join(data_dir, "predictions.csv"), "w") as f:
         csv_writer = csv.writer(f)
         csv_writer.writerow(["image", "prediction"])

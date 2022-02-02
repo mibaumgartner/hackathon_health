@@ -1,6 +1,6 @@
 import timm
 
-from typing import Optional, List
+from typing import Optional, List, Tuple
 from abc import abstractmethod
 import torch
 import pytorch_lightning as pl
@@ -82,10 +82,10 @@ class BaseClassificationModule(pl.LightningModule):
 
     def predict_step(
         self, batch, batch_idx: int, dataloader_idx: Optional[int] = None
-    ) -> List[torch.Tensor]:
-        imgs = batch
+    ) -> Tuple[List[str], List[torch.Tensor]]:
+        img_names, imgs = batch
         preds = self.model(imgs)
-        return preds.argmax(dim=-1)
+        return img_names, preds.argmax(dim=-1)
 
     def get_num_classes(self) -> int:
         """
