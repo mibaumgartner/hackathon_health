@@ -2,7 +2,7 @@ import csv
 import os
 import sys
 from argparse import ArgumentParser
-from typing import List
+from typing import List, Tuple
 import itertools
 
 import numpy as np
