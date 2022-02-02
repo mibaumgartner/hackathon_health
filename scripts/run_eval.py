@@ -92,8 +92,8 @@ if __name__ == "__main__":
     # load model with pretrained weights
     final_model_arch = "regnety_002"
     final_model_ckpt_path = "/hkfs/work/workspace/scratch/im9193-H1/checkpoints/" \
-                             "logs/regnety002_normMoreAug_ddp_lowLR/version_0/" \
-                             "checkpoints/epoch=19-step=9879.ckpt"
+        "logs/regnety002_normMoreAug_ddp_lowLR/version_0/" \
+        "checkpoints/epoch=19-step=9879.ckpt"
     model = timm.create_model(final_model_arch)
     model.eval()
 
