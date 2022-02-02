@@ -50,13 +50,15 @@ class WeightedDistributedRandomSampler(Sampler[int]):
         self.weights = torch.as_tensor(weights, dtype=torch.double)
         self.num_samples = num_samples
         self.replacement = replacement
-        rank = dist.get_rank() if rank is None else rank
-        self.generator = torch.Generator()
-        self.generator.manual_seed(rank)
+        self.rank = rank
+
 
     def __iter__(self) -> Iterator[int]:
+        rank = dist.get_rank() if self.rank is None else self.rank
+        g = torch.Generator()
+        g.manual_seed(rank)
         rand_tensor = torch.multinomial(
-            self.weights, self.num_samples, self.replacement, generator=self.generator
+            self.weights, self.num_samples, self.replacement, generator=g
         )
         yield from iter(rand_tensor.tolist())
 
