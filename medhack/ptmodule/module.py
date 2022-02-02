@@ -30,15 +30,28 @@ import torch.optim as optim
 # https://github.com/rwightman/pytorch-image-models/blob/07379c6d5dbb809b3f255966295a4b03f23af843/timm/models/mobilenetv3.py#L50-L52
 
 
-class ClassificationModule(pl.LightningModule):
-    def __init__(self, epochs: int):
+class BaseClassificationModule(pl.LightningModule):
+    def __init__(
+        self,
+        run_name: str,
+        architecture: str,
+        pretrained: bool,
+        epochs: int,
+        init_learning_rate: float,
+        weight_decay: float,
+        loss: str,
+    ):
         super().__init__()
         self.epochs = epochs
-        self.milestones: List[int] = [int(epochs / 3), int(2 * epochs / 3)]
-        self.model = self.create_model()
-        self.loss = self.create_loss()
+        self.architecture = architecture
+        self.init_lr = init_learning_rate
+        self.wd = weight_decay
+
+        self.model = self.create_module(architecture, pretrained)
+        self.loss = self.create_loss(loss)
 
         self.example_input_array = torch.zeros((1, 3, 32, 32), dtype=torch.float32)
+        self.save_hyperparameters({"n_classes": self.get_num_classes()})
 
     def forward(self, imgs):
         return self.model(imgs)
@@ -63,64 +76,31 @@ class ClassificationModule(pl.LightningModule):
         acc = (labels == preds).float().mean()
         self.log("val/acc", acc, prog_bar=True, logger=True)
 
-    @abstractmethod
-    def create_model(self) -> torch.nn.Module:
-        raise NotImplementedError
-
-    @abstractmethod
-    def create_loss(self) -> torch.nn.Module:
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_num_classes(self) -> torch.nn.Module:
-        raise NotImplementedError
-
-
-class BaselineSmallClassification(ClassificationModule):
-    def create_loss(self) -> torch.nn.Module:
-        return nn.CrossEntropyLoss()
-
-    def get_num_classes(self) -> torch.nn.Module:
+    def get_num_classes(self) -> int:
+        """
+        Depends on the type of loss used.
+        Can be overloaded to replace the default of 2.
+        """
         return 2
 
-    def create_model(self) -> torch.nn.Module:
-        model = timm.create_model(
-            "resnet18", pretrained=True, num_classes=self.get_num_classes()
+    def create_module(self, architecture, pretrained):
+        return timm.create_model(
+            architecture, pretrained=pretrained, num_classes=self.get_num_classes()
         )
-        return model
+
+    def create_loss(self, loss_name: str) -> torch.nn.Module:
+        if loss_name == "CE":
+            return nn.CrossEntropyLoss()
+        else:
+            raise NotImplementedError("Not implemented yet.")
 
     def configure_optimizers(self):
         optimizer = optim.AdamW(
-            self.parameters(), lr=3e-4, weight_decay=0.001, amsgrad=True
+            self.parameters(), lr=self.init_lr, weight_decay=self.wd, amsgrad=True
         )
-        scheduler = optim.lr_scheduler.MultiStepLR(
+        scheduler = optim.lr_scheduler.CosineAnnealingLR(
             optimizer,
-            milestones=self.milestones,
-            gamma=0.1,
-        )
-        return [optimizer], [scheduler]
-
-
-class BaselineLargeClassification(ClassificationModule):
-    def create_loss(self) -> torch.nn.Module:
-        return nn.CrossEntropyLoss()
-
-    def get_num_classes(self) -> torch.nn.Module:
-        return 2
-
-    def create_model(self) -> torch.nn.Module:
-        model = timm.create_model(
-            "resnet50", pretrained=True, num_classes=self.get_num_classes()
-        )
-        return model
-
-    def configure_optimizers(self):
-        optimizer = optim.AdamW(
-            self.parameters(), lr=3e-4, weight_decay=0.001, amsgrad=True
-        )
-        scheduler = optim.lr_scheduler.MultiStepLR(
-            optimizer,
-            milestones=self.milestones,
-            gamma=0.1,
+            T_max=self.epochs,
+            eta_min=1e-9,
         )
         return [optimizer], [scheduler]

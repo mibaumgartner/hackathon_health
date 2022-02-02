@@ -6,8 +6,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 
 from medhack.data_loading import BasicDataModule
 from medhack.ptmodule.module import (
-    BaselineSmallClassification,
-    BaselineLargeClassification
+    BaseClassificationModule,
 )
 import cv2
 
@@ -23,14 +22,55 @@ TRAIN_DIR = "/hkfs/work/workspace/scratch/im9193-H1/checkpoints"
 ROOT_DIR = "/hkfs/work/workspace/scratch/im9193-H1/preprocessed_data"
 
 # TRAINING PARAMS
-MAX_EPOCHS = 100
 
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ("yes", "true", "t", "y", "1"):
+        return True
+    elif v.lower() in ("no", "false", "f", "n", "0"):
+        return False
+    else:
+        raise argparse.ArgumentTypeError("Boolean value expected.")
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('name', type=str, help="Experiment Name")
+    parser.add_argument("name", type=str, help="Experiment Name")
+    parser.add_argument(
+        "-a",
+        "--architecture",
+        default="resnet18",
+        nargs="?",
+        help="Name of the Timm Architecture.",
+    )
+    parser.add_argument(
+        "-l", "--loss_name", default="CE", choices=["CE"], nargs="?"
+    )
+    parser.add_argument("-wd", "--weight_decay", default=1e-5, nargs="?")
+    parser.add_argument("-lr", "--learning_rate", default=1e-4, nargs="?")
+    parser.add_argument("-loss", "--loss_name", default="CE", nargs="?")
+    parser.add_argument("-pt",
+                        "--pretrained",
+                        default=True,
+                        type=str2bool,
+                        nargs="?")
+    parser.add_argument(
+        "-e",
+        "--epochs",
+        default=100,
+        type=int,
+        help="Name of the ModelTrainer, basically the different Dataset splits.",
+    )
+
     args = parser.parse_args()
     name = args.name
+    ARCH = args.architecture
+    MAX_EPOCHS = args.epochs
+    LR = args.learning_rate
+    WD = args.weight_decay
+    LOSS_NAME = args.loss_name
+    PRETRAINED = args.pretrained
+    
 
     root_dir = Path(ROOT_DIR)
     train_dir = Path(TRAIN_DIR) / name
@@ -42,13 +82,19 @@ def main():
 
     print("Setup data")
     datamodule = BasicDataModule(root_dir=root_dir)
-    module = BaselineSmallClassification(epochs=MAX_EPOCHS)
+    module = BaseClassificationModule(run_name=name,
+                                      architecture=ARCH,
+                                      pretrained=PRETRAINED,
+                                      epochs=MAX_EPOCHS,
+                                      init_learning_rate=LR,
+                                      weight_decay=WD,
+                                      loss=LOSS_NAME)
 
     print("Setup Callbacks and Logging")
     callbacks = []
     checkpoint_cb = ModelCheckpoint(
         dirpath=train_dir,
-        filename='model_best',
+        filename="model_best",
         save_last=True,
         save_top_k=3,
         monitor="val/acc",
@@ -56,10 +102,10 @@ def main():
     )
     callbacks.append(checkpoint_cb)
 
-    log_dir = train_dir / "logs"
+    log_dir = Path(TRAIN_DIR) / "logs"
     log_dir.mkdir()
     mllogger = TensorBoardLogger(
-        save_dir=log_dir,
+        save_dir=str(log_dir),
         name=name,
     )
 
@@ -76,7 +122,7 @@ def main():
         progress_bar_refresh_rate=None,
         reload_dataloaders_every_epoch=False,
         num_sanity_val_steps=10,
-        weights_summary='full',
+        weights_summary="full",
         # plugins=plugins,
         move_metrics_to_cpu=False,
     )
