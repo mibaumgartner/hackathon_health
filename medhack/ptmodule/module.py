@@ -1,6 +1,6 @@
 import timm
 
-from typing import Optional
+from typing import Optional, List
 from abc import abstractmethod
 import torch
 import pytorch_lightning as pl
@@ -31,8 +31,10 @@ import torch.optim as optim
 
 
 class ClassificationModule(pl.LightningModule):
-    def __init__(self):
+    def __init__(self, epochs: int):
         super().__init__()
+        self.epochs = epochs
+        self.milestones: List[int] = [int(epochs/3), int(2*epochs/3)]
         self.model = self.create_model()
         self.loss = self.create_loss()
 
@@ -48,7 +50,9 @@ class ClassificationModule(pl.LightningModule):
         loss = self.loss(preds, labels)
 
         acc = (preds.argmax(dim=-1) == labels).float().mean()
-        self.log("train/acc", acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        self.log(
+            "train/acc", acc, on_step=False, on_epoch=True, prog_bar=True, logger=True
+        )
         self.log("train/loss", loss, prog_bar=True, logger=True)
         return loss
 
@@ -72,7 +76,7 @@ class ClassificationModule(pl.LightningModule):
         raise NotImplementedError
 
 
-class BaselineClassification(ClassificationModule):
+class BaselineSmallClassification(ClassificationModule):
     def create_loss(self) -> torch.nn.Module:
         return nn.CrossEntropyLoss()
 
@@ -80,10 +84,43 @@ class BaselineClassification(ClassificationModule):
         return 2
 
     def create_model(self) -> torch.nn.Module:
-        model = timm.create_model('resnet18', pretrained=True, num_classes=self.get_num_classes())
+        model = timm.create_model(
+            "resnet18", pretrained=True, num_classes=self.get_num_classes()
+        )
         return model
 
     def configure_optimizers(self):
-        optimizer = optim.AdamW(self.parameters(), lr=3e-4, weight_decay=0.001, amsgrad=True)
-        scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[100, 150], gamma=0.1)
+        optimizer = optim.AdamW(
+            self.parameters(), lr=3e-4, weight_decay=0.001, amsgrad=True
+        )
+        scheduler = optim.lr_scheduler.MultiStepLR(
+            optimizer,
+            milestones=self.milestones,
+            gamma=0.1,
+        )
+        return [optimizer], [scheduler]
+
+
+class BaselineLargeClassification(ClassificationModule):
+    def create_loss(self) -> torch.nn.Module:
+        return nn.CrossEntropyLoss()
+
+    def get_num_classes(self) -> torch.nn.Module:
+        return 2
+
+    def create_model(self) -> torch.nn.Module:
+        model = timm.create_model(
+            "resnet50", pretrained=True, num_classes=self.get_num_classes()
+        )
+        return model
+
+    def configure_optimizers(self):
+        optimizer = optim.AdamW(
+            self.parameters(), lr=3e-4, weight_decay=0.001, amsgrad=True
+        )
+        scheduler = optim.lr_scheduler.MultiStepLR(
+            optimizer,
+            milestones=self.milestones,
+            gamma=0.1,
+        )
         return [optimizer], [scheduler]
