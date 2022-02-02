@@ -85,7 +85,7 @@ class BaseClassificationModule(pl.LightningModule):
         imgs = batch
         preds = self.model(imgs)
         return preds.argmax(dim=-1)
-    
+
     def get_num_classes(self) -> int:
         """
         Depends on the type of loss used.
