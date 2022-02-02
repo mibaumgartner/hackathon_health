@@ -80,7 +80,7 @@ if __name__ == "__main__":
     DETERMINISTIC = False
 
     weights_path = Path(args.weights_path)
-    save_dir = args.save_dir
+    save_dir = args.save_dir  # Determines where to save the .csv
     data_dir = args.data_dir  # Decides if test/train is used.
 
     os.makedirs(save_dir, exist_ok=True)
@@ -152,7 +152,7 @@ if __name__ == "__main__":
             for row in csv_reader:
                 groundtruths[row["image"]] = row["label"]
         read_predictions: dict[str:int] = {}
-        with open(os.path.join(data_dir, "predictions.csv"), "w") as f:
+        with open(os.path.join(save_dir, "predictions.csv"), "w") as f:
             csv_reader = csv.DictReader(f)
             for row in csv_reader:
                 read_predictions[row["image"]] = row["label"]
