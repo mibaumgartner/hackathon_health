@@ -40,6 +40,7 @@ class CovidInferenceImageDataset(Dataset):
         image = self.transform(image)
         return image
 
+
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument(
@@ -63,7 +64,7 @@ if __name__ == "__main__":
         help="Directory containing the data you want to predict",
         default="/hkfs/work/workspace/scratch/im9193-health_challenge",
     )
-    
+
     parser.add_argument("-nw", "--num_workers", default=16, type=int, nargs="?")
     parser.add_argument("-bs", "--batch_size", default=32, type=int, nargs="?")
     parser.add_argument("-ngpu", "--num_gpu", default=1, type=int, nargs="?")
