@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import cv2
-
+import numpy as np
 from medhack.dataset import CovidImageDataset
 import albumentations as A
 import pytorch_lightning as pl
@@ -14,6 +14,18 @@ from medhack.distributed_sampler import WeightedDistributedRandomSampler
 
 mean = 0.8184206354986654  # Gimme for Gregor
 std = 0.03884859786640268  # Wait for Gregor
+
+
+def gamma_transform(img, gamma, epsilon=1e-7):
+    _min = img.min()
+    _max = img.max()
+    _range = _max - _min
+    return np.power(((img - _min) / float(_range + epsilon)), gamma) * _range + _min
+
+
+class OurGammaTransform(A.RandomGamma):
+    def apply(self, img, gamma=1, **params):
+        return gamma_transform(img, gamma=gamma) 
 
 
 class BasicDataModule(pl.LightningDataModule):
@@ -34,23 +46,60 @@ class BasicDataModule(pl.LightningDataModule):
 
         train_transforms = A.Compose(
             [
-                # A.Normalize(mean, std),
-                A.VerticalFlip(),
-                A.Affine(scale=(0.80, 1.20),  # 0.5 == 50% zoomed out
-                         rotate=30,
-                         shear=(10, 10),
-                         interpolation=cv2.INTER_CUBIC,
-                         mode=cv2.BORDER_REFLECT,
-                         p=0.5,
-                         ),
-                A.RandomContrast(0.1),
-                A.GaussianBlur()
+                # A.Normalize(mean, std, max_pixel_value=1.0),
+                A.HorizontalFlip(),
+
+                A.OneOf(
+                [
+                    A.Affine(scale=(0.75, 1.30),  # 0.5 == 50% zoomed out
+                             rotate=30,
+                             shear=(10, 10),
+                             interpolation=cv2.INTER_CUBIC,
+                             mode=cv2.BORDER_REFLECT,
+                             p=1.0,
+                             ),
+                    A.RandomResizedCrop(
+                        224, 224, scale=(0.2, 1.0), ratio=(0.75, 1.33), p=1.0,   
+                    ),
+                    A.NoOp(),
+                    ]
+                ),
+                
+
+                # old params
+                # A.Affine(scale=(0.75, 1.30),  # 0.5 == 50% zoomed out
+                #          rotate=30,
+                #          shear=(10, 10),
+                #          interpolation=cv2.INTER_CUBIC,
+                #          mode=cv2.BORDER_REFLECT,
+                #          p=0.9,
+                #          ),
+                # albumentations.augmentations.transforms.ImageCompression
+                # A.ImageCompression(
+                #         quality_lower=80,
+                #         quality_upper=100,
+                #         p=0.1,
+                # ),
+                # A.GridDropout(
+                #     ratio=0.5,
+                #     p=1.0,
+                #     holes_number_x=4,
+                #     holes_number_y=4,
+                #     random_offset=True,
+                #     ),
+                
+                A.RandomBrightnessContrast(p=0.2, contrast_limit=0.1, brightness_limit=0.1, brightness_by_max=False),
+                # A.GaussNoise(var_limit=0.01, p=0.2),
+
+                # # # Insane Aug
+                OurGammaTransform(gamma_limit=(80, 120), p=0.2),
+                A.GaussianBlur(),
             ]
         )
         val_transforms = A.Compose(
             [
-                # A.Normalize(mean, std),
-                A.VerticalFlip(),
+                # A.Normalize(mean, std, max_pixel_value=1.0),
+                # A.VerticalFlip(),
             ]
         )
         self.train_dataset = CovidImageDataset(train_csv, root_dir, train_transforms)

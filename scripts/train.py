@@ -137,7 +137,8 @@ def main():
         weights_summary="full",
         # plugins=plugins,
         move_metrics_to_cpu=False,
-        replace_sampler_ddp=True if GPUS > 1 else False,
+        replace_sampler_ddp=False if GPUS > 1 else True,
+        # find_unused_parameters=False,
         **kwargs,
     )
     trainer.fit(module, datamodule=datamodule)
