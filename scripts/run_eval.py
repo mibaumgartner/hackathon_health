@@ -35,7 +35,7 @@ class CovidInferenceImageDataset(Dataset):
             for row in csv_reader:
                 self.test_image_names.append(os.path.join(root_dir, "imgs", row[0]))
         if csv_file == "valid.csv":
-            self.test_image_names = self.test_image_names # * int(200000 / len(self.test_image_names))
+            self.test_image_names = self.test_image_names  # * int(200000 / len(self.test_image_names))
 
         self.transform = Compose([
             Resize((224, 224)),
@@ -176,6 +176,6 @@ if __name__ == "__main__":
             gt = groundtruths[key]
             pd = read_predictions[key]
             is_true.append(int(gt) == int(pd))
-            
+
         acc = float(sum(is_true)) / float(len(is_true))
         print(f"Accuracy read from predictions.csv: {acc}")
