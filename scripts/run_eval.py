@@ -75,6 +75,8 @@ if __name__ == "__main__":
     WORKERS: int = args.num_workers  # 152/4 38 --> 32
     BS: int = args.batch_size  # BatchSize
     ACCELERATOR = "cpu"  # ToDo: Move to GPU once CPU tested!
+    if ACCELERATOR == "cpu":
+        GPUS= 0
     PRECISION = 16
     BENCHMARK = True
     DETERMINISTIC = False
