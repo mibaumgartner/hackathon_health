@@ -85,7 +85,7 @@ if __name__ == "__main__":
 
     os.makedirs(save_dir, exist_ok=True)
 
-    check_script = "test_data" not in data_dir
+    test_run = "test_data" in data_dir
 
     # load model with pretrained weights
     final_model_arch = "regnety_002"
