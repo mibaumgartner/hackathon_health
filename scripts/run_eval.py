@@ -2,7 +2,6 @@ import csv
 import os
 import sys
 from argparse import ArgumentParser
-from pathlib import Path
 from typing import List
 
 import numpy as np
@@ -37,7 +36,8 @@ class CovidInferenceImageDataset(Dataset):
         if csv_file == "valid.csv":
             self.test_image_names = self.test_image_names * int(200000 / len(self.test_image_names))
 
-        self.transform = Compose([Resize((224, 224)), ToTensor()])
+        self.pre_pad_transform = Compose([Resize((224, 224))])
+        self.post_pad_transform = Compose([ToTensor()])
 
     def __len__(self):
         return len(self.test_image_names)
@@ -45,7 +45,8 @@ class CovidInferenceImageDataset(Dataset):
     def __getitem__(self, idx: int) -> torch.Tensor:
         img_name = self.test_image_names[int(idx)]
         image = Image.open(img_name)
-        image = self.transform(image)
+        image = np.expand_dims(self.pre_pad_transform(image), axis=0).repeat(3, axis=0)
+        image = self.post_pad_transform(image)
         return image
 
 
