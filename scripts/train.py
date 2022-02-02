@@ -12,7 +12,6 @@ import cv2
 
 cv2.setNumThreads(0)
 cv2.ocl.setUseOpenCL(False)
-GPUS = 1
 ACCELERATOR = "gpu"
 PRECISION = 16
 BENCHMARK = True
@@ -42,15 +41,13 @@ def main():
         "-a",
         "--architecture",
         default="resnet18",
+        type=str,
         nargs="?",
         help="Name of the Timm Architecture.",
     )
-    parser.add_argument(
-        "-l", "--loss_name", default="CE", choices=["CE"], nargs="?"
-    )
-    parser.add_argument("-wd", "--weight_decay", default=1e-5, nargs="?")
-    parser.add_argument("-lr", "--learning_rate", default=1e-4, nargs="?")
-    parser.add_argument("-loss", "--loss_name", default="CE", nargs="?")
+    parser.add_argument("-wd", "--weight_decay", default=1e-5, type=float, nargs="?")
+    parser.add_argument("-lr", "--learning_rate", default=1e-4, type=float, nargs="?")
+    parser.add_argument("-loss", "--loss_name", default="CE", type=str, nargs="?")
     parser.add_argument("-pt",
                         "--pretrained",
                         default=True,
@@ -63,6 +60,9 @@ def main():
         type=int,
         help="Name of the ModelTrainer, basically the different Dataset splits.",
     )
+    parser.add_argument("-nw", "--num_workers", default=16, type=int, nargs="?")
+    parser.add_argument("-bs", "--batch_size", default=32, type=int, nargs="?")
+    parser.add_argument("-ngpu", "--num_gpu", default=1, type=int, nargs="?")
 
     args = parser.parse_args()
     name = args.name
@@ -72,6 +72,9 @@ def main():
     WD = args.weight_decay
     LOSS_NAME = args.loss_name
     PRETRAINED = args.pretrained
+    NUM_WORKERS = args.num_workers
+    BATCH_SIZE = args.batch_size
+    GPUS = args.num_gpu
 
     root_dir = Path(ROOT_DIR)
     train_dir = Path(TRAIN_DIR) / name
@@ -82,14 +85,19 @@ def main():
         train_dir.mkdir(parents=True)
 
     print("Setup data")
-    datamodule = BasicDataModule(root_dir=root_dir)
+    datamodule = BasicDataModule(
+        root_dir=root_dir,
+        num_workers=NUM_WORKERS,
+        batch_size=BATCH_SIZE,
+        )
     module = BaseClassificationModule(run_name=name,
                                       architecture=ARCH,
                                       pretrained=PRETRAINED,
                                       epochs=MAX_EPOCHS,
                                       init_learning_rate=LR,
                                       weight_decay=WD,
-                                      loss=LOSS_NAME)
+                                      loss=LOSS_NAME,
+                                      )
 
     print("Setup Callbacks and Logging")
     callbacks = []
@@ -110,6 +118,10 @@ def main():
         name=name,
     )
 
+    kwargs = {}
+    if GPUS > 1:
+        kwargs["strategy"] = "ddp"
+
     print("Start Training")
     trainer = pl.Trainer(
         gpus=GPUS,
@@ -126,6 +138,7 @@ def main():
         weights_summary="full",
         # plugins=plugins,
         move_metrics_to_cpu=False,
+        **kwargs,
     )
     trainer.fit(module, datamodule=datamodule)
 
