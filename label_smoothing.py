@@ -1,5 +1,6 @@
 from torch import nn
 
+
 class LabelSmoothing(nn.Module):
     """
     NLL loss with label smoothing.
