@@ -21,6 +21,7 @@ class DummyDataset(Dataset):
     def __len__(self):
         return 20000
 
+
 class CovidInferenceImageDataset(Dataset):
     def __init__(self, csv_file, root_dir):
         """
