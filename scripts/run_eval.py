@@ -98,7 +98,7 @@ if __name__ == "__main__":
     data_split = "validation" if check_script else "test"
     print("Running inference on {} data".format(data_split))
 
-    if check_script == "test":
+    if check_script:
         # ToDo: Test that samples are augmented identically"!
         dataset = CovidInferenceImageDataset("test.csv", root_dir=data_dir)
     else:
