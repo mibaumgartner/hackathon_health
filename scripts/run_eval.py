@@ -99,7 +99,7 @@ if __name__ == "__main__":
 
     # dataloader
     print("Running inference on {} data".format("test" if test_run else "validation"))
-    
+
     if test_run:
         # ToDo: Test that samples are augmented identically"!
         dataset = CovidInferenceImageDataset("test.csv", root_dir=data_dir)
