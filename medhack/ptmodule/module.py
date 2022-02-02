@@ -48,7 +48,7 @@ class BaseClassificationModule(pl.LightningModule):
         self.init_lr = init_learning_rate
         self.wd = weight_decay
         self.model = self.create_module(architecture, pretrained)
-        
+
         if not is_testing:
             self.loss = self.create_loss(loss)
             self.example_input_array = torch.zeros((1, 3, 32, 32), dtype=torch.float32)
