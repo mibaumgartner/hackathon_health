@@ -25,7 +25,7 @@ def gamma_transform(img, gamma, epsilon=1e-7):
 
 class OurGammaTransform(A.RandomGamma):
     def apply(self, img, gamma=1, **params):
-        return gamma_transform(img, gamma=gamma) 
+        return gamma_transform(img, gamma=gamma)
 
 
 class BasicDataModule(pl.LightningDataModule):
@@ -50,21 +50,21 @@ class BasicDataModule(pl.LightningDataModule):
                 A.HorizontalFlip(),
 
                 A.OneOf(
-                [
-                    A.Affine(scale=(0.75, 1.30),  # 0.5 == 50% zoomed out
-                             rotate=30,
-                             shear=(10, 10),
-                             interpolation=cv2.INTER_CUBIC,
-                             mode=cv2.BORDER_REFLECT,
-                             p=1.0,
-                             ),
-                    A.RandomResizedCrop(
-                        224, 224, scale=(0.2, 1.0), ratio=(0.75, 1.33), p=1.0,   
-                    ),
-                    A.NoOp(),
+                    [
+                        A.Affine(scale=(0.75, 1.30),  # 0.5 == 50% zoomed out
+                                 rotate=30,
+                                 shear=(10, 10),
+                                 interpolation=cv2.INTER_CUBIC,
+                                 mode=cv2.BORDER_REFLECT,
+                                 p=1.0,
+                                 ),
+                        A.RandomResizedCrop(
+                            224, 224, scale=(0.2, 1.0), ratio=(0.75, 1.33), p=1.0,
+                        ),
+                        A.NoOp(),
                     ]
                 ),
-                
+
 
                 # old params
                 # A.Affine(scale=(0.75, 1.30),  # 0.5 == 50% zoomed out
@@ -87,7 +87,7 @@ class BasicDataModule(pl.LightningDataModule):
                 #     holes_number_y=4,
                 #     random_offset=True,
                 #     ),
-                
+
                 A.RandomBrightnessContrast(p=0.2, contrast_limit=0.1, brightness_limit=0.1, brightness_by_max=False),
                 # A.GaussNoise(var_limit=0.01, p=0.2),
 
