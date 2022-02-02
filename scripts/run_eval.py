@@ -92,7 +92,7 @@ if __name__ == "__main__":
     final_model_chkpt_path = "/hkfs/work/workspace/scratch/im9193-H1/checkpoints/" \
                              "logs/regnety002_normMoreAug_ddp_lowLR/version_0/" \
                              "checkpoints/epoch=19-step=9879.ckpt"
-    model = timm.create_model(final_model_arch, checkpoint_path=final_model_chkpt_path)
+    model = timm.create_model(final_model_arch)
     model.eval()
 
     # dataloader
@@ -108,6 +108,7 @@ if __name__ == "__main__":
     trainer = pl.Trainer(
         logger=False,
         checkpoint_callback=False,
+        resume_from_checkpoint=final_model_chkpt_path,
         enable_checkpointing=False,
         accelerator=ACCELERATOR,
         precision=PRECISION,
