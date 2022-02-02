@@ -96,10 +96,9 @@ if __name__ == "__main__":
     model.eval()
 
     # dataloader
-    data_split = "validation" if check_script else "test"
-    print("Running inference on {} data".format(data_split))
-
-    if check_script:
+    print("Running inference on {} data".format("test" if test_run else "validation"))
+    
+    if test_run:
         # ToDo: Test that samples are augmented identically"!
         dataset = CovidInferenceImageDataset("test.csv", root_dir=data_dir)
     else:
