@@ -8,7 +8,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=152
 #SBATCH --time=20:00:00
-#SBATCH --output=/hkfs/work/workspace/scratch/im9193-H1/SunSkelTestDDP.txt
+#SBATCH --output=/hkfs/work/workspace/scratch/im9193-H1/SunSkelInferenceDDP.txt
 #SBATCH --reservation=ai_hero
 
 export CUDA_CACHE_DISABLE=1

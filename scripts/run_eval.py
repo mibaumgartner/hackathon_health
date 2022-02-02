@@ -2,8 +2,8 @@ import csv
 import os
 import sys
 from argparse import ArgumentParser
-from typing import List, Tuple
-import itertools
+from typing import List, Tuple, Dict
+from itertools import chain
 
 import numpy as np
 import pytorch_lightning as pl
@@ -11,7 +11,7 @@ import torch
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision.transforms import Compose, Resize, ToTensor
-
+from pathlib import Path
 from medhack.ptmodule.module import BaseClassificationModule
 
 
@@ -35,7 +35,7 @@ class CovidInferenceImageDataset(Dataset):
             for row in csv_reader:
                 self.test_image_names.append(os.path.join(root_dir, "imgs", row[0]))
         if csv_file == "valid.csv":
-            self.test_image_names = self.test_image_names * int(200000 / len(self.test_image_names))
+            self.test_image_names = self.test_image_names # * int(200000 / len(self.test_image_names))
 
         self.transform = Compose([
             Resize((224, 224)),
@@ -79,7 +79,7 @@ if __name__ == "__main__":
     WORKERS: int = args.num_workers  # 152/4 38 --> 32
     BS: int = args.batch_size  # BatchSize
     ACCELERATOR = "gpu"
-    GPUS = 4
+    GPUS = 1
     PRECISION = 16
     BENCHMARK = True
     DETERMINISTIC = False
@@ -93,9 +93,8 @@ if __name__ == "__main__":
 
     # load model with pretrained weights
     final_model_arch = "resnet18"
-    final_model_ckpt_path = "/hkfs/work/workspace/scratch/im9193-h1/checkpoints/" \
-                            "logs/resnet18_pre_nonormaugpluspostfix_ddp/version_1/" \
-                            "checkpoints/'epoch=99-step=49399.ckpt"
+    final_model_ckpt_path = "/hkfs/work/workspace/scratch/im9193-H1/checkpoints/logs/resnet18_pre_noNormAugPlusPostFix_ddp/version_1/" \
+                            "checkpoints/epoch=99-step=49399.ckpt"
     model = BaseClassificationModule(run_name="Nobody_cares",
                                      architecture=final_model_arch,
                                      pretrained=False,
@@ -140,40 +139,43 @@ if __name__ == "__main__":
 
     predictions: List[int]
     with torch.inference_mode():
-        img_names, prediction_batches = trainer.predict(
+        outputs: List[Tuple[List[str], torch.Tensor]] = trainer.predict(
             model=model,
             dataloaders=dataloader,
             return_predictions=True,
             ckpt_path=final_model_ckpt_path
         )
-        img_names = list(itertools.chain.from_iterable(img_names))
-        predictions = list(torch.cat(prediction_batches, dim=0).detach().cpu().numpy())
+        img_names = list(chain.from_iterable([o[0] for o in outputs]))
+        predictions = list(torch.cat([o[1] for o in outputs], dim=0).detach().cpu().numpy())
 
     with open(os.path.join(data_dir, "predictions.csv"), "w") as f:
         csv_writer = csv.writer(f)
         csv_writer.writerow(["image", "prediction"])
         for img_name, prediction in zip(img_names, predictions):
-            csv_writer.writerow([img_name, prediction])
+            csv_writer.writerow([Path(img_name).name, prediction])
 
     if test_run == "test":
         sys.exit()
     else:
         print("Done! The result is saved in {}".format(save_dir))
-        groundtruths: dict[str:int] = {}
-        with open(os.path.join(data_dir, "valid.csv"), "w") as f:
-            csv_reader = csv.DictReader(f)
-            for row in csv_reader:
-                groundtruths[row["image"]] = row["label"]
-        read_predictions: dict[str:int] = {}
-        with open(os.path.join(save_dir, "predictions.csv"), "w") as f:
-            csv_reader = csv.DictReader(f)
-            for row in csv_reader:
-                read_predictions[row["image"]] = row["label"]
 
-        is_true = []
+        groundtruths: Dict[str, int] = {}
+        with open(os.path.join(data_dir, "valid_with_labels.csv"), "r") as f:
+            csv_reader = csv.DictReader(f)
+            for row in csv_reader:
+                groundtruths[row["image"]] = 0 if row["label"] == 'negative' else 1
+
+        read_predictions: Dict[str, int] = {}
+        with open(os.path.join(save_dir, "predictions.csv"), "r") as f:
+            csv_reader = csv.DictReader(f)
+            for row in csv_reader:
+                read_predictions[row["image"]] = row["prediction"]
+
+        is_true: List[bool] = []
         for key in groundtruths.keys():
-            groundtruth = groundtruths[key]
-            prediction = predictions[key]
-            is_true.append(groundtruth == prediction)
-        acc = float(sum(is_true) / len(is_true))
-        print("Accuracy read from predictions.csv")
+            gt = groundtruths[key]
+            pd = read_predictions[key]
+            is_true.append(int(gt) == int(pd))
+            
+        acc = float(sum(is_true)) / float(len(is_true))
+        print(f"Accuracy read from predictions.csv: {acc}")
