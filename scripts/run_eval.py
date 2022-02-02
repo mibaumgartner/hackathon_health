@@ -21,7 +21,6 @@ class DummyDataset(Dataset):
     def __len__(self):
         return 20000
 
-
 class CovidInferenceImageDataset(Dataset):
     def __init__(self, csv_file, root_dir):
         """
@@ -36,8 +35,9 @@ class CovidInferenceImageDataset(Dataset):
         if csv_file == "valid.csv":
             self.test_image_names = self.test_image_names * int(200000 / len(self.test_image_names))
 
-        self.pre_pad_transform = Compose([Resize((224, 224))])
-        self.post_pad_transform = Compose([ToTensor()])
+        self.transform = Compose([
+            Resize((224, 224)),
+            ToTensor()])
 
     def __len__(self):
         return len(self.test_image_names)
@@ -45,8 +45,7 @@ class CovidInferenceImageDataset(Dataset):
     def __getitem__(self, idx: int) -> torch.Tensor:
         img_name = self.test_image_names[int(idx)]
         image = Image.open(img_name)
-        image = np.expand_dims(self.pre_pad_transform(image), axis=0).repeat(3, axis=0)
-        image = self.post_pad_transform(image)
+        image = torch.repeat_interleave(torch.unsqueeze(self.transform(image), dim=0), 3, dim=0)
         return image
 
 
