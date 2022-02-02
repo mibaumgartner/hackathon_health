@@ -96,6 +96,7 @@ def main():
                                       init_learning_rate=LR,
                                       weight_decay=WD,
                                       loss=LOSS_NAME,
+                                      is_testing=True
                                       )
 
     print("Setup Callbacks and Logging")
