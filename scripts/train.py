@@ -89,7 +89,7 @@ def main():
         root_dir=root_dir,
         num_workers=NUM_WORKERS,
         batch_size=BATCH_SIZE,
-        )
+    )
     module = BaseClassificationModule(run_name=name,
                                       architecture=ARCH,
                                       pretrained=PRETRAINED,
