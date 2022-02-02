@@ -52,7 +52,6 @@ class WeightedDistributedRandomSampler(Sampler[int]):
         self.replacement = replacement
         self.rank = rank
 
-
     def __iter__(self) -> Iterator[int]:
         rank = dist.get_rank() if self.rank is None else self.rank
         g = torch.Generator()
