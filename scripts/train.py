@@ -23,6 +23,7 @@ ROOT_DIR = "/hkfs/work/workspace/scratch/im9193-H1/preprocessed_data"
 
 # TRAINING PARAMS
 
+
 def str2bool(v):
     if isinstance(v, bool):
         return v
@@ -32,6 +33,7 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError("Boolean value expected.")
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -70,7 +72,6 @@ def main():
     WD = args.weight_decay
     LOSS_NAME = args.loss_name
     PRETRAINED = args.pretrained
-    
 
     root_dir = Path(ROOT_DIR)
     train_dir = Path(TRAIN_DIR) / name
