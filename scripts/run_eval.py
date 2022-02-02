@@ -46,7 +46,7 @@ class CovidInferenceImageDataset(Dataset):
     def __getitem__(self, idx: int) -> torch.Tensor:
         img_name = self.test_image_names[int(idx)]
         image = Image.open(img_name)
-        image = torch.repeat_interleave(torch.unsqueeze(self.transform(image), dim=0), 3, dim=0)
+        image = torch.repeat_interleave(self.transform(image), 3, dim=0)
         return image
 
 
