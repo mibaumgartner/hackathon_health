@@ -91,7 +91,7 @@ if __name__ == "__main__":
 
     # load model with pretrained weights
     final_model_arch = "regnety_002"
-    final_model_chkpt_path = "/hkfs/work/workspace/scratch/im9193-H1/checkpoints/" \
+    final_model_ckpt_path = "/hkfs/work/workspace/scratch/im9193-H1/checkpoints/" \
                              "logs/regnety002_normMoreAug_ddp_lowLR/version_0/" \
                              "checkpoints/epoch=19-step=9879.ckpt"
     model = timm.create_model(final_model_arch)
@@ -109,7 +109,6 @@ if __name__ == "__main__":
     trainer = pl.Trainer(
         logger=False,
         checkpoint_callback=False,
-        resume_from_checkpoint=final_model_chkpt_path,
         enable_checkpointing=False,
         accelerator=ACCELERATOR,
         precision=PRECISION,
@@ -133,7 +132,8 @@ if __name__ == "__main__":
     predictions: List[int]
     with torch.no_grad():
         prediction_batches = trainer.predict(
-            model=model, dataloaders=dataloader, return_predictions=True
+            model=model, dataloaders=dataloader, return_predictions=True,
+            ckpt_path=final_model_ckpt_path
         )
         predictions = torch.cat(prediction_batches, dim=0).detach().cpu().numpy()
 
@@ -144,7 +144,7 @@ if __name__ == "__main__":
         for img_name, prediction in zip(img_names, predictions):
             csv_writer.writerow([img_name, prediction])
 
-    if check_script == "test":
+    if test_run == "test":
         sys.exit()
     else:
         print("Done! The result is saved in {}".format(save_dir))
