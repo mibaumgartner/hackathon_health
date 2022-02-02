@@ -3,8 +3,6 @@ from pathlib import Path
 from typing import List, Tuple
 
 import albumentations as A
-from albumentations.pytorch import ToTensorV2
-import cv2
 import numpy as np
 import torch
 from torch.utils.data import Dataset

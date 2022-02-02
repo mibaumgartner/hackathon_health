@@ -1,20 +1,27 @@
 import csv
 import os
 import sys
+from argparse import ArgumentParser
+from pathlib import Path
 from typing import List
 
+import numpy as np
 import pytorch_lightning as pl
-from argparse import ArgumentParser
 import torch
-import timm
-from pathlib import Path
-
 from PIL import Image
 from torch.utils.data import Dataset
-
 from torchvision.transforms import Compose, Resize, ToTensor
 
+from medhack.ptmodule.module import BaseClassificationModule
 
+
+class DummyDataset(Dataset):
+    def __getitem__(self, idx: int) -> torch.Tensor:
+        return torch.from_numpy(np.random.random(size=(3, 224, 224))).half()
+    
+    def __len__(self):
+        return 20000
+    
 class CovidInferenceImageDataset(Dataset):
     def __init__(self, csv_file, root_dir):
         """
@@ -71,10 +78,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    GPUS: int = args.num_gpu  # N_GPUS
+    # GPUS: int = args.num_gpu  # N_GPUS
     WORKERS: int = args.num_workers  # 152/4 38 --> 32
     BS: int = args.batch_size  # BatchSize
-    ACCELERATOR = "cpu"  # ToDo: Move to GPU once CPU tested!
+    ACCELERATOR = "gpu"  # ToDo: Move to GPU once CPU tested!
+    GPUS = 1  # TODO: Revert when tested.
     if ACCELERATOR == "cpu":
         GPUS = 0
     PRECISION = 16
@@ -84,36 +92,43 @@ if __name__ == "__main__":
     weights_path = Path(args.weights_path)
     save_dir = args.save_dir  # Determines where to save the .csv
     data_dir = args.data_dir  # Decides if test/train is used.
-
+    # data_dir = os.getcwd()
     os.makedirs(save_dir, exist_ok=True)
 
-    test_run = "test_data" in data_dir
+    test_run = False # "test_data" in data_dir
 
     # load model with pretrained weights
     final_model_arch = "regnety_002"
     final_model_ckpt_path = "/hkfs/work/workspace/scratch/im9193-H1/checkpoints/" \
                              "logs/regnety002_normMoreAug_ddp_lowLR/version_0/" \
                              "checkpoints/epoch=19-step=9879.ckpt"
-    model = timm.create_model(final_model_arch)
-    model.eval()
+    model = BaseClassificationModule(run_name="Nobody_cares",
+                                     architecture=final_model_arch,
+                                     pretrained=False,
+                                     epochs=0,
+                                     init_learning_rate=0,
+                                     weight_decay=0,
+                                     loss="None",
+                                     is_testing=True
+                                     )
 
     # dataloader
     print("Running inference on {} data".format("test" if test_run else "validation"))
 
     if test_run:
-        # ToDo: Test that samples are augmented identically"!
+        # dataset = DummyDataset()
         dataset = CovidInferenceImageDataset("test.csv", root_dir=data_dir)
     else:
+        # dataset = DummyDataset()
         dataset = CovidInferenceImageDataset("valid.csv", root_dir=data_dir)
 
     trainer = pl.Trainer(
         logger=False,
-        checkpoint_callback=False,
         enable_checkpointing=False,
         accelerator=ACCELERATOR,
         precision=PRECISION,
         benchmark=True,
-        weights_summary=None,
+        enable_model_summary=False,
         gpus=GPUS,
         reload_dataloaders_every_n_epochs=False,
         enable_progress_bar=False,

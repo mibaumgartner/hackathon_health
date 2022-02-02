@@ -40,18 +40,19 @@ class BaseClassificationModule(pl.LightningModule):
         init_learning_rate: float,
         weight_decay: float,
         loss: str,
+        is_testing: bool = False,
     ):
         super().__init__()
         self.epochs = epochs
         self.architecture = architecture
         self.init_lr = init_learning_rate
         self.wd = weight_decay
-
         self.model = self.create_module(architecture, pretrained)
-        self.loss = self.create_loss(loss)
-
-        self.example_input_array = torch.zeros((1, 3, 32, 32), dtype=torch.float32)
-        self.save_hyperparameters({"n_classes": self.get_num_classes()})
+        
+        if not is_testing:
+            self.loss = self.create_loss(loss)
+            self.example_input_array = torch.zeros((1, 3, 32, 32), dtype=torch.float32)
+            self.save_hyperparameters({"n_classes": self.get_num_classes()})
 
     def forward(self, imgs):
         return self.model(imgs)
@@ -80,7 +81,7 @@ class BaseClassificationModule(pl.LightningModule):
         self.log("val/loss", val_loss, prog_bar=False, logger=True)
 
     def predict_step(
-        self, batch: Any, batch_idx: int, dataloader_idx: Optional[int] = None
+        self, batch, batch_idx: int, dataloader_idx: Optional[int] = None
     ) -> List[torch.Tensor]:
         imgs = batch
         preds = self.model(imgs)
