@@ -88,7 +88,7 @@ if __name__ == "__main__":
     check_script = "test_data" not in data_dir
 
     # load model with pretrained weights
-    final_model_arch = "regnety002"
+    final_model_arch = "regnety_002"
     final_model_chkpt_path = "/hkfs/work/workspace/scratch/im9193-H1/checkpoints/" \
                              "logs/regnety002_normMoreAug_ddp_lowLR/version_0/" \
                              "checkpoints/epoch=19-step=9879.ckpt"
