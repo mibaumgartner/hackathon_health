@@ -6,14 +6,15 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 
 from medhack.data_loading import BasicDataModule
 from medhack.ptmodule.module import (
-    BaselineClassification,
+    BaselineSmallClassification,
+    BaselineLargeClassification
 )
 import cv2
 
 cv2.setNumThreads(0)
 cv2.ocl.setUseOpenCL(False)
-GPUS = None
-ACCELERATOR = "cpu"
+GPUS = 1
+ACCELERATOR = "gpu"
 PRECISION = 16
 BENCHMARK = True
 DETERMINISTIC = False
@@ -41,7 +42,7 @@ def main():
 
     print("Setup data")
     datamodule = BasicDataModule(root_dir=root_dir)
-    module = BaselineClassification()
+    module = BaselineSmallClassification(epochs=MAX_EPOCHS)
 
     print("Setup Callbacks and Logging")
     callbacks = []
