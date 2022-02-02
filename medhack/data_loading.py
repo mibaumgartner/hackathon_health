@@ -14,29 +14,29 @@ std = 0.03884859786640268  # Wait for Gregor
 
 
 class BasicDataModule(pl.LightningDataModule):
-    def __init__(self, root_dir: Path):
+    def __init__(self, root_dir: Path, num_workers: int = 8, batch_size: int = 32,):
         super(BasicDataModule, self).__init__()
         train_csv = "train.csv"
         val_csv = "valid.csv"
 
         # Hyperparameters of Dataloader
-        self.batch_size: int = 32
+        self.batch_size: int = batch_size
         self.shuffle: bool = True
         self.drop_last: bool = False
         self.persistent_workers: bool = True  # Probably useful
-        self.num_workers = 8
+        self.num_workers = num_workers
         self.pin_memory = True
 
         train_transforms = A.Compose(
             [
-                A.Normalize(mean, std),
-                A.HorizontalFlip(),
-                A.Affine(scale=(0.95, 1.10),  # 0.5 == 50% zoomed out
-                         rotate=10,
+                # A.Normalize(mean, std),
+                A.VerticalFlip(),
+                A.Affine(scale=(0.80, 1.20),  # 0.5 == 50% zoomed out
+                         rotate=30,
                          shear=(10, 10),
                          interpolation=cv2.INTER_CUBIC,
                          mode=cv2.BORDER_REFLECT,
-                         p=0.2
+                         p=1.0,
                          ),
                 A.RandomContrast(0.1),
                 A.GaussianBlur()
@@ -44,8 +44,8 @@ class BasicDataModule(pl.LightningDataModule):
         )
         val_transforms = A.Compose(
             [
-                A.Normalize(mean, std),
-                A.HorizontalFlip(),
+                # A.Normalize(mean, std),
+                A.VerticalFlip(),
             ]
         )
         self.train_dataset = CovidImageDataset(train_csv, root_dir, train_transforms)
