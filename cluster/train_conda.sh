@@ -17,4 +17,4 @@ group_workspace=/hkfs/work/workspace/scratch/im9193-H1
 
 source /hkfs/work/workspace/scratch/im9193-conda/conda/etc/profile.d/conda.sh
 conda activate ${group_workspace}/health_baseline_conda_env
-python ${group_workspace}/hackathon_health/scripts/train.py
+python ${group_workspace}/hackathon_health/scripts/train.py "$@"
