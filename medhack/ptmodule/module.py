@@ -64,9 +64,9 @@ class BaseClassificationModule(pl.LightningModule):
 
         acc = (preds.argmax(dim=-1) == labels).float().mean()
         self.log(
-            "train/acc", acc, on_step=False, on_epoch=True, prog_bar=True, logger=True
+            "train/acc", acc, on_step=False, on_epoch=True, prog_bar=False, logger=True
         )
-        self.log("train/loss", loss, prog_bar=True, logger=True)
+        self.log("train/loss", loss, prog_bar=False, logger=True)
         return loss
 
     def validation_step(self, batch, batch_idx: Optional[int] = None):
@@ -74,7 +74,9 @@ class BaseClassificationModule(pl.LightningModule):
 
         preds = self.model(imgs).argmax(dim=-1)
         acc = (labels == preds).float().mean()
-        self.log("val/acc", acc, prog_bar=True, logger=True)
+        val_loss = self.loss(preds, labels)
+        self.log("val/acc", acc, prog_bar=False, logger=True)
+        self.log("val/loss", val_loss, prog_bar=False, logger=True)
 
     def get_num_classes(self) -> int:
         """
