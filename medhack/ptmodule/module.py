@@ -79,6 +79,13 @@ class BaseClassificationModule(pl.LightningModule):
         self.log("val/acc", acc, prog_bar=False, logger=True)
         self.log("val/loss", val_loss, prog_bar=False, logger=True)
 
+    def predict_step(
+        self, batch: Any, batch_idx: int, dataloader_idx: Optional[int] = None
+    ) -> List[torch.Tensor]:
+        imgs = batch
+        preds = self.model(imgs)
+        return preds.argmax(dim=-1)
+    
     def get_num_classes(self) -> int:
         """
         Depends on the type of loss used.
