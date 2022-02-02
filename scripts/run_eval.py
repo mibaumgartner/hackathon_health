@@ -76,7 +76,7 @@ if __name__ == "__main__":
     BS: int = args.batch_size  # BatchSize
     ACCELERATOR = "cpu"  # ToDo: Move to GPU once CPU tested!
     if ACCELERATOR == "cpu":
-        GPUS= 0
+        GPUS = 0
     PRECISION = 16
     BENCHMARK = True
     DETERMINISTIC = False
