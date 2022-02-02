@@ -18,11 +18,10 @@ from medhack.ptmodule.module import BaseClassificationModule
 class DummyDataset(Dataset):
     def __getitem__(self, idx: int) -> torch.Tensor:
         return torch.from_numpy(np.random.random(size=(3, 224, 224))).half()
-
+    
     def __len__(self):
         return 20000
-
-
+    
 class CovidInferenceImageDataset(Dataset):
     def __init__(self, csv_file, root_dir):
         """
@@ -73,9 +72,9 @@ if __name__ == "__main__":
         default="/hkfs/work/workspace/scratch/im9193-health_challenge",
     )
 
-    parser.add_argument("-nw", "--num_workers", default=16, type=int, nargs="?")
+    parser.add_argument("-nw", "--num_workers", default=32, type=int, nargs="?")
     parser.add_argument("-bs", "--batch_size", default=32, type=int, nargs="?")
-    parser.add_argument("-ngpu", "--num_gpu", default=1, type=int, nargs="?")
+    parser.add_argument("-ngpu", "--num_gpu", default=4, type=int, nargs="?")
 
     args = parser.parse_args()
 
@@ -96,13 +95,13 @@ if __name__ == "__main__":
     # data_dir = os.getcwd()
     os.makedirs(save_dir, exist_ok=True)
 
-    test_run = False  # "test_data" in data_dir
+    test_run = False # "test_data" in data_dir
 
     # load model with pretrained weights
     final_model_arch = "regnety_002"
     final_model_ckpt_path = "/hkfs/work/workspace/scratch/im9193-H1/checkpoints/" \
-        "logs/regnety002_normMoreAug_ddp_lowLR/version_0/" \
-        "checkpoints/epoch=19-step=9879.ckpt"
+                             "logs/regnety002_normMoreAug_ddp_lowLR/version_0/" \
+                             "checkpoints/epoch=19-step=9879.ckpt"
     model = BaseClassificationModule(run_name="Nobody_cares",
                                      architecture=final_model_arch,
                                      pretrained=False,
