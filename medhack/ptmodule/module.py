@@ -71,10 +71,11 @@ class BaseClassificationModule(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx: Optional[int] = None):
         imgs, labels = batch
+        preds = self.model(imgs)
 
-        preds = self.model(imgs).argmax(dim=-1)
-        acc = (labels == preds).float().mean()
+        acc = (labels == preds.argmax(dim=-1)).float().mean()
         val_loss = self.loss(preds, labels)
+
         self.log("val/acc", acc, prog_bar=False, logger=True)
         self.log("val/loss", val_loss, prog_bar=False, logger=True)
 

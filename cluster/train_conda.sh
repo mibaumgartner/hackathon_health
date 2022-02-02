@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=SunSkelTest
+#SBATCH --job-name=SunSkelTestDDP
 #SBATCH --partition=haicore-gpu4
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:4
@@ -8,7 +8,8 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=152
 #SBATCH --time=20:00:00
-#SBATCH --output=/hkfs/work/workspace/scratch/im9193-H1/SunSkelTest.txt
+#SBATCH --output=/hkfs/work/workspace/scratch/im9193-H1/SunSkelTestDDP.txt
+#SBATCH --reservation=ai_hero
 
 export CUDA_CACHE_DISABLE=1
 export OMP_NUM_THREADS=8

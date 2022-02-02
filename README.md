@@ -182,3 +182,8 @@ conda activate /hkfs/work/workspace/scratch/im9193-H1/health_baseline_conda_env
 
 # Data
 /hkfs/work/workspace/scratch/im9193-health_challenge
+
+
+# See jobs
+1568409
+srun --jobid 1568548 --overlap --pty /bin/bash

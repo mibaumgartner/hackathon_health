@@ -41,7 +41,7 @@ class BasicDataModule(pl.LightningDataModule):
                          shear=(10, 10),
                          interpolation=cv2.INTER_CUBIC,
                          mode=cv2.BORDER_REFLECT,
-                         p=1.0,
+                         p=0.5,
                          ),
                 A.RandomContrast(0.1),
                 A.GaussianBlur()

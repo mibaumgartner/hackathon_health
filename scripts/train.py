@@ -12,7 +12,6 @@ import cv2
 
 cv2.setNumThreads(0)
 cv2.ocl.setUseOpenCL(False)
-ACCELERATOR = "gpu"
 PRECISION = 16
 BENCHMARK = True
 DETERMINISTIC = False
@@ -76,13 +75,12 @@ def main():
     BATCH_SIZE = args.batch_size
     GPUS = args.num_gpu
 
+    ACCELERATOR = "gpu" if GPUS > 0 else "cpu"
+
     root_dir = Path(ROOT_DIR)
     train_dir = Path(TRAIN_DIR) / name
 
-    if train_dir.is_dir():
-        raise RuntimeError("Train dir already exists")
-    else:
-        train_dir.mkdir(parents=True)
+    train_dir.mkdir(parents=True, exist_ok=True)
 
     print("Setup data")
     datamodule = BasicDataModule(
