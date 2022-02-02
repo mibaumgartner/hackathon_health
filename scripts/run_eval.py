@@ -27,7 +27,7 @@ class CovidInferenceImageDataset(Dataset):
             for row in csv_reader:
                 self.test_image_names.append(os.path.join(root_dir, "imgs", row[0]))
         if csv_file == "valid.csv":
-            self.test_image_names = len(self.test_image_names)
+            self.test_image_names = self.test_image_names * int(200000 / len(self.test_image_names))
 
         self.transform = Compose([Resize((224, 224)), ToTensor()])
 
@@ -40,27 +40,8 @@ class CovidInferenceImageDataset(Dataset):
         image = self.transform(image)
         return image
 
-
-def predict(model, device, test_loader):
-    model.eval()
-    model.to(device)
-    predictions = []
-    with torch.no_grad():
-        for data, img_name in test_loader:
-            data = data.to(device)
-            output = model(data)
-            _, predicted = torch.max(output.data, 1)
-
-            predictions.append(
-                [[i.split("/")[-1] for i in img_name], predicted.cpu().numpy()]
-            )
-
-    return predictions
-
-
 if __name__ == "__main__":
     parser = ArgumentParser()
-    # TODO: Set the Paths to our final checkpoint here!
     parser.add_argument(
         "--weights_path",
         type=str,
@@ -82,13 +63,17 @@ if __name__ == "__main__":
         help="Directory containing the data you want to predict",
         default="/hkfs/work/workspace/scratch/im9193-health_challenge",
     )
+    
+    parser.add_argument("-nw", "--num_workers", default=16, type=int, nargs="?")
+    parser.add_argument("-bs", "--batch_size", default=32, type=int, nargs="?")
+    parser.add_argument("-ngpu", "--num_gpu", default=1, type=int, nargs="?")
 
     args = parser.parse_args()
 
-    GPUS: int = 4  # N_GPUS
-    WORKERS: int = 32  # 152/4 38 --> 32
-    BS: int = 32  # BatchSize
-    ACCELERATOR = "gpu"
+    GPUS: int = args.num_gpu  # N_GPUS
+    WORKERS: int = args.num_workers  # 152/4 38 --> 32
+    BS: int = args.batch_size  # BatchSize
+    ACCELERATOR = "cpu"  # ToDo: Move to GPU once CPU tested!
     PRECISION = 16
     BENCHMARK = True
     DETERMINISTIC = False
