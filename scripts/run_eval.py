@@ -51,26 +51,20 @@ class CovidInferenceImageDataset(Dataset):
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument(
-        "--weights_path",
-        type=str,
-        default="/hkfs/work/workspace/scratch/im9193-health_challenge_baseline/saved_models/vgg_baseline.pt",
-        help="Model weights path",
-    )  # TODO: adapt to your model weights path in the bash script
-
     # Here we have potentially multiple checkpoints (4 since each model has one)
     parser.add_argument(
         "--save_dir",
         type=str,
         help="Directory where weights and results are saved",
-        default="/hkfs/work/workspace/scratch/im9193-health_challenge_baseline/submission_test",
+        default="/hkfs/work/workspace/scratch/im9193-H1/eval_data",
     )
 
     parser.add_argument(
         "--data_dir",
         type=str,
-        help="Directory containing the data you want to predict",
-        default="/hkfs/work/workspace/scratch/im9193-health_challenge",
+        help="Directory containing the CSV file you want to predict "
+             "and the imgs dir is!",
+        default="/hkfs/work/workspace/scratch/im9193-H1/eval_data",
     )
 
     parser.add_argument("-nw", "--num_workers", default=32, type=int, nargs="?")
@@ -90,7 +84,6 @@ if __name__ == "__main__":
     BENCHMARK = True
     DETERMINISTIC = False
 
-    weights_path = Path(args.weights_path)
     save_dir = args.save_dir  # Determines where to save the .csv
     data_dir = args.data_dir  # Decides if test/train is used.
     # data_dir = os.getcwd()
