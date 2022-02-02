@@ -81,7 +81,7 @@ if __name__ == "__main__":
     # GPUS: int = args.num_gpu  # N_GPUS
     WORKERS: int = args.num_workers  # 152/4 38 --> 32
     BS: int = args.batch_size  # BatchSize
-    ACCELERATOR = "gpu"  # ToDo: Move to GPU once CPU tested!
+    ACCELERATOR = "cpu"  # ToDo: Move to GPU once CPU tested!
     GPUS = 1  # TODO: Revert when tested.
     if ACCELERATOR == "cpu":
         GPUS = 0
@@ -147,7 +147,9 @@ if __name__ == "__main__":
     predictions: List[int]
     with torch.no_grad():
         prediction_batches = trainer.predict(
-            model=model, dataloaders=dataloader, return_predictions=True,
+            model=model,
+            dataloaders=dataloader,
+            return_predictions=True,
             ckpt_path=final_model_ckpt_path
         )
         predictions = torch.cat(prediction_batches, dim=0).detach().cpu().numpy()
