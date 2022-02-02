@@ -78,10 +78,8 @@ if __name__ == "__main__":
     # GPUS: int = args.num_gpu  # N_GPUS
     WORKERS: int = args.num_workers  # 152/4 38 --> 32
     BS: int = args.batch_size  # BatchSize
-    ACCELERATOR = "cpu"  # ToDo: Move to GPU once CPU tested!
-    GPUS = 1  # TODO: Revert when tested.
-    if ACCELERATOR == "cpu":
-        GPUS = 0
+    ACCELERATOR = "gpu"
+    GPUS = 4
     PRECISION = 16
     BENCHMARK = True
     DETERMINISTIC = False
@@ -91,13 +89,13 @@ if __name__ == "__main__":
     # data_dir = os.getcwd()
     os.makedirs(save_dir, exist_ok=True)
 
-    test_run = False  # "test_data" in data_dir
+    test_run = "test_data" in data_dir
 
     # load model with pretrained weights
-    final_model_arch = "regnety_002"
-    final_model_ckpt_path = "/hkfs/work/workspace/scratch/im9193-H1/checkpoints/" \
-        "logs/regnety002_normMoreAug_ddp_lowLR/version_0/" \
-        "checkpoints/epoch=19-step=9879.ckpt"
+    final_model_arch = "resnet18"
+    final_model_ckpt_path = "/hkfs/work/workspace/scratch/im9193-h1/checkpoints/" \
+                            "logs/resnet18_pre_nonormaugpluspostfix_ddp/version_1/" \
+                            "checkpoints/'epoch=99-step=49399.ckpt"
     model = BaseClassificationModule(run_name="Nobody_cares",
                                      architecture=final_model_arch,
                                      pretrained=False,
@@ -109,7 +107,7 @@ if __name__ == "__main__":
                                      )
 
     # dataloader
-    print("Running inference on {} data".format("test" if test_run else "validation"))
+    print(f"Running inference on {'test' if test_run else 'validation'} data")
 
     if test_run:
         # dataset = DummyDataset()
