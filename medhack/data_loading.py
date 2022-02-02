@@ -17,7 +17,7 @@ std = 0.03884859786640268  # Wait for Gregor
 
 
 class BasicDataModule(pl.LightningDataModule):
-    def __init__(self, root_dir: Path,gpu_num: int , num_workers: int = 8, batch_size: int = 32,
+    def __init__(self, root_dir: Path, gpu_num: int, num_workers: int = 8, batch_size: int = 32,
                  ):
         super(BasicDataModule, self).__init__()
         train_csv = "train.csv"
@@ -55,14 +55,14 @@ class BasicDataModule(pl.LightningDataModule):
         )
         self.train_dataset = CovidImageDataset(train_csv, root_dir, train_transforms)
         self.valid_dataset = CovidImageDataset(val_csv, root_dir, val_transforms)
-        
+
         if self.gpu_num == 1:
             rank = 0
         else:
             if not dist.is_available():
                 raise RuntimeError("Requires distributed package to be available")
             rank = None
-        
+
         self.training_data_sampler = WeightedDistributedRandomSampler(
             weights=self.train_dataset.get_data_weights(),
             num_samples=len(self.train_dataset),
