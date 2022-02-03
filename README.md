@@ -23,6 +23,6 @@ sbatch eval_conda.sh --save_dir [dir to save results] --data_dir [directory with
 Details:
 
 1. _save_dir:_ Directory where predictions will be saved to as 'predictions.csv'
-2. _data_dir:_ Directory that contains (a 'test.csv' that contains only an 'image' column;"
-             "The corresponding images are located '{data_dir}/imgs'
-3. _ckpt_path:_ Path to the checkpoint file loaded from Zenodo.
+2. _data_dir:_ Directory to the folder containing the images of the csv file.
+3. _csv_filepath:_ Path to the csv file containing the "images" in the first column and the first row is the header
+4. _ckpt_path:_ Path to the checkpoint file loaded from Zenodo.
