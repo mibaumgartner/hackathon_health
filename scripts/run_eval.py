@@ -173,7 +173,7 @@ if __name__ == "__main__":
             return_predictions=False,
             ckpt_path=final_model_ckpt_path
         )
-    
+
     expected_outputs = [save_dir / f"gpu_{rank}_prediction.csv" for rank in range(4)]
     all_image_names = []
     all_preds = []
@@ -183,7 +183,7 @@ if __name__ == "__main__":
             for row in csv_reader:
                 all_image_names.append(row["image"])
                 all_preds.append(row["prediction"])
-       
+
     with open(os.path.join(data_dir, "predictions.csv"), "w") as f:
         csv_writer = csv.writer(f)
         csv_writer.writerow(["image", "prediction"])
