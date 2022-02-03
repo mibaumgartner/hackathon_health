@@ -84,7 +84,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--save_dir",
         type=str,
-        help="Directory where weights and results are saved",
+        help="Directory where results will be saved",
         default="/hkfs/work/workspace/scratch/im9193-H1/eval_data",
     )
 
