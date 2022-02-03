@@ -10,7 +10,8 @@ def resolve_requirements(file):
         for r in req:
             if r.startswith("-r"):
                 requirements += resolve_requirements(
-                    os.path.join(os.path.dirname(file), r.split(" ")[1]))
+                    os.path.join(os.path.dirname(file), r.split(" ")[1])
+                )
             else:
                 requirements.append(r)
     return requirements
@@ -22,22 +23,22 @@ def read_file(file):
     return content
 
 
-requirements = resolve_requirements(os.path.join(os.path.dirname(__file__),
-                                                 'requirements.txt'))
+# requirements = resolve_requirements(os.path.join(os.path.dirname(__file__),
+#                                                  'requirements.txt'))
 
 readme = read_file(os.path.join(os.path.dirname(__file__), "README.md"))
 license = read_file(os.path.join(os.path.dirname(__file__), "LICENSE"))
 print(requirements)
 
 setup(
-    name='medhack',
+    name="medhack",
     version="0.0.1",
     packages=find_packages(),
     # url='path/to/url',
     test_suite="pytest",
     long_description=readme,
-    long_description_content_type='text/markdown',
-    install_requires=requirements,
+    long_description_content_type="text/markdown",
+    # install_requires=requirements,
     tests_require=["coverage"],
     python_requires=">=3.8",
     # author="FridgeReloaded",
