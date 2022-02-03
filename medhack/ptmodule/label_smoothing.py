@@ -6,7 +6,7 @@ class LabelSmoothing(nn.Module):
     NLL loss with label smoothing.
     """
 
-    def __init__(self, smoothing=0.0):
+    def __init__(self, smoothing=0.1):
         """
         Constructor for the LabelSmoothing module.
         :param smoothing: label smoothing factor

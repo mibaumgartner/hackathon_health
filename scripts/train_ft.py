@@ -5,8 +5,9 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 
 from medhack.data_loading import BasicDataModule
-from medhack.ptmodule.module import (
-    BaseClassificationModule,
+from medhack.ptmodule.ft_callback import FeatureExtractorFreezeUnfreeze
+from medhack.ptmodule.ft_module import (
+    FineTuneClassificationModule,
 )
 import cv2
 
@@ -47,11 +48,7 @@ def main():
     parser.add_argument("-wd", "--weight_decay", default=1e-5, type=float, nargs="?")
     parser.add_argument("-lr", "--learning_rate", default=1e-4, type=float, nargs="?")
     parser.add_argument("-loss", "--loss_name", default="CE", type=str, nargs="?")
-    parser.add_argument("-pt",
-                        "--pretrained",
-                        default=True,
-                        type=str2bool,
-                        nargs="?")
+    parser.add_argument("-pt", "--pretrained", default=True, type=str2bool, nargs="?")
     parser.add_argument(
         "-e",
         "--epochs",
@@ -83,32 +80,35 @@ def main():
 
     print("Setup data")
     datamodule = BasicDataModule(
-        root_dir=root_dir,
-        num_workers=NUM_WORKERS,
-        batch_size=BATCH_SIZE,
-        gpu_num=GPUS
+        root_dir=root_dir, num_workers=NUM_WORKERS, batch_size=BATCH_SIZE, gpu_num=GPUS
     )
-    module = BaseClassificationModule(run_name=name,
-                                      architecture=ARCH,
-                                      pretrained=PRETRAINED,
-                                      epochs=MAX_EPOCHS,
-                                      init_learning_rate=LR,
-                                      weight_decay=WD,
-                                      loss=LOSS_NAME,
-                                      is_testing=False,
-                                      )
+    module = FineTuneClassificationModule(
+        run_name=name,
+        architecture=ARCH,
+        pretrained=PRETRAINED,
+        epochs=MAX_EPOCHS,
+        init_learning_rate=LR,
+        weight_decay=WD,
+        loss=LOSS_NAME,
+        is_testing=False,
+    )
 
     print("Setup Callbacks and Logging")
     callbacks = []
-    checkpoint_cb = ModelCheckpoint(
-        dirpath=train_dir,
-        filename="model_best",
-        save_last=True,
-        save_top_k=3,
-        monitor="val/acc",
-        mode="max",
+    # checkpoint_cb = ModelCheckpoint(
+    #     dirpath=train_dir,
+    #     filename="model_best",
+    #     save_last=True,
+    #     save_top_k=3,
+    #     monitor="val/acc",
+    #     mode="max",
+    # )
+    # callbacks.append(checkpoint_cb)
+
+    finetune_cb = FeatureExtractorFreezeUnfreeze(
+        train_last_n_modules=1, unfreeze_at_epoch=100
     )
-    callbacks.append(checkpoint_cb)
+    callbacks.append(finetune_cb)
 
     log_dir = Path(TRAIN_DIR) / "logs"
     log_dir.mkdir(exist_ok=True)
@@ -140,7 +140,7 @@ def main():
         precision=PRECISION,
         benchmark=BENCHMARK,
         deterministic=DETERMINISTIC,
-        # callbacks=callbacks, # TODO: add top3 weights callback?
+        callbacks=callbacks,  # TODO: add top3 weights callback?
         logger=mllogger,
         max_epochs=MAX_EPOCHS,
         progress_bar_refresh_rate=None,

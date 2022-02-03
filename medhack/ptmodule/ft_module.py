@@ -1,11 +1,7 @@
-import csv
-from pathlib import Path
-
 import timm
-import itertools
 
-from typing import Optional, List, Tuple, Union
-import torch.distributed as dist
+from typing import Optional, List, Tuple
+from abc import abstractmethod
 import torch
 import pytorch_lightning as pl
 
@@ -35,7 +31,7 @@ from medhack.ptmodule.label_smoothing import LabelSmoothing
 # https://github.com/rwightman/pytorch-image-models/blob/07379c6d5dbb809b3f255966295a4b03f23af843/timm/models/mobilenetv3.py#L50-L52
 
 
-class BaseClassificationModule(pl.LightningModule):
+class FineTuneClassificationModule(pl.LightningModule):
     def __init__(
         self,
         run_name: str,
@@ -46,7 +42,6 @@ class BaseClassificationModule(pl.LightningModule):
         weight_decay: float,
         loss: str,
         is_testing: bool = False,
-        output_path: Union[Path, None] = None
     ):
         super().__init__()
         self.epochs = epochs
@@ -54,9 +49,6 @@ class BaseClassificationModule(pl.LightningModule):
         self.init_lr = init_learning_rate
         self.wd = weight_decay
         self.model = self.create_module(architecture, pretrained)
-
-        if output_path is not None:
-            self.output_path = output_path
 
         if not is_testing:
             self.loss = self.create_loss(loss)
@@ -74,7 +66,13 @@ class BaseClassificationModule(pl.LightningModule):
 
         acc = (preds.argmax(dim=-1) == labels).float().mean()
         self.log(
-            "train/acc", acc, on_step=False, on_epoch=True, prog_bar=False, logger=True, sync_dist=True
+            "train/acc",
+            acc,
+            on_step=False,
+            on_epoch=True,
+            prog_bar=False,
+            logger=True,
+            sync_dist=True,
         )
         self.log("train/loss", loss, prog_bar=False, logger=True, sync_dist=True)
         return loss
@@ -96,21 +94,6 @@ class BaseClassificationModule(pl.LightningModule):
         preds = self.model(imgs)
         return img_names, preds.argmax(dim=-1)
 
-    # def on_predict_epoch_end(self, results: List[Tuple[List[str], List[torch.Tensor]]]):
-    #     print(results)
-    #     img_names = list(itertools.chain.from_iterable([o[0] for o in results]))
-    #     predictions = list(
-    #         torch.cat([o[1] for o in results], dim=0).detach().cpu().numpy()
-    #     )
-    #     rank = dist.get_rank()
-    #     output_path = self.output_path / f"gpu_{rank}_prediction.csv"
-    #     with open(output_path, "w") as f:
-    #         csv_writer = csv.writer(f)
-    #         csv_writer.writerow(["image", "prediction"])
-    #         for img_name, prediction in zip(img_names, predictions):
-    #             csv_writer.writerow([Path(img_name).name, prediction])
-    #     return
-
     def get_num_classes(self) -> int:
         """
         Depends on the type of loss used.
@@ -131,8 +114,12 @@ class BaseClassificationModule(pl.LightningModule):
             raise NotImplementedError("Not implemented yet.")
 
     def configure_optimizers(self):
+        breakpoint()
         optimizer = optim.AdamW(
-            self.parameters(), lr=self.init_lr, weight_decay=self.wd, amsgrad=True
+            filter(lambda p: p.requires_grad, self.parameters),
+            lr=self.init_lr,
+            weight_decay=self.wd,
+            amsgrad=True,
         )
         scheduler = optim.lr_scheduler.CosineAnnealingLR(
             optimizer,
