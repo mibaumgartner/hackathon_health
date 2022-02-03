@@ -99,10 +99,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--ckpt_path",
         type=str,
-        default="/hkfs/work/workspace/scratch/im9193-H1/checkpoints/logs/"
+        default="/hkfs/work/workspace/scratch/im9193-H1/checkpoints/logs/"\
         "resnet18_pre_noNormAugPlusPostFix_ddp/version_1/checkpoints/epoch=99-step=49399.ckpt",
     )
-
+    
     args = parser.parse_args()
 
     # GPUS: int = args.num_gpu  # N_GPUS
@@ -116,6 +116,7 @@ if __name__ == "__main__":
 
     save_dir = args.save_dir  # Determines where to save the .csv
     data_dir = args.data_dir  # Decides if test/train is used.
+    ckpt_path = args.ckpt_path
     # data_dir = os.getcwd()
     os.makedirs(save_dir, exist_ok=True)
 
@@ -123,8 +124,8 @@ if __name__ == "__main__":
 
     # load model with pretrained weights
     final_model_arch = "resnet18"
-    final_model_ckpt_path = "/hkfs/work/workspace/scratch/im9193-H1/checkpoints/logs/resnet18_pre_noNormAugPlusPostFix_ddp/version_1/" \
-                            "checkpoints/epoch=99-step=49399.ckpt"
+    final_model_ckpt_path = ckpt_path
+
     model = BaseClassificationModule(run_name="Nobody_cares",
                                      architecture=final_model_arch,
                                      pretrained=False,
@@ -207,7 +208,7 @@ if __name__ == "__main__":
 
     if GPUS > 1:
         dist.barrier()
-    if GPUS == 1 or dist.get_rank() == 0:
+    if GPUS== 1 or dist.get_rank() == 0:
         expected_outputs = [Path(save_dir) / f"gpu_{rank}_prediction.csv" for rank in range(4)]
         all_image_names = []
         all_preds = []
