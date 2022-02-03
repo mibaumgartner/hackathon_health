@@ -84,25 +84,25 @@ if __name__ == "__main__":
     parser.add_argument(
         "--save_dir",
         type=str,
-        help="Directory where results will be saved",
+        help="Directory where predictions will be saved to as 'predictions.csv'",
         default="/hkfs/work/workspace/scratch/im9193-H1/eval_data",
     )
 
     parser.add_argument(
         "--data_dir",
         type=str,
-        help="Directory containing the CSV file you want to predict "
-             "and the imgs dir is!",
+        help="Directory that contains (a 'test.csv' that contains only 'image' names;"
+             "The corresponding images are located '{data_dir}/imgs')",
         default="/hkfs/work/workspace/scratch/im9193-H1/eval_data",
     )
 
     parser.add_argument(
         "--ckpt_path",
         type=str,
-        default="/hkfs/work/workspace/scratch/im9193-H1/checkpoints/logs/"\
+        default="/hkfs/work/workspace/scratch/im9193-H1/checkpoints/logs/"
         "resnet18_pre_noNormAugPlusPostFix_ddp/version_1/checkpoints/epoch=99-step=49399.ckpt",
     )
-    
+
     args = parser.parse_args()
 
     # GPUS: int = args.num_gpu  # N_GPUS
@@ -208,7 +208,7 @@ if __name__ == "__main__":
 
     if GPUS > 1:
         dist.barrier()
-    if GPUS== 1 or dist.get_rank() == 0:
+    if GPUS == 1 or dist.get_rank() == 0:
         expected_outputs = [Path(save_dir) / f"gpu_{rank}_prediction.csv" for rank in range(4)]
         all_image_names = []
         all_preds = []
