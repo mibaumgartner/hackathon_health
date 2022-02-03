@@ -5,7 +5,8 @@ from argparse import ArgumentParser
 from typing import List, Tuple, Dict
 from itertools import chain
 
-import numpy as np
+import pickle
+import torch.distributed as dist
 import pytorch_lightning as pl
 import torch
 from PIL import Image
@@ -15,12 +16,38 @@ from pathlib import Path
 from medhack.ptmodule.module import BaseClassificationModule
 
 
-class DummyDataset(Dataset):
-    def __getitem__(self, idx: int) -> torch.Tensor:
-        return torch.from_numpy(np.random.random(size=(3, 224, 224))).half()
+def collect_results_gpu(result_part, size):
+    rank = dist.get_rank()
+    world_size = dist.get_world_size()
+    # dump result part to tensor with pickle
+    part_tensor = torch.tensor(
+        bytearray(pickle.dumps(result_part)), dtype=torch.uint8, device='cuda')
+    # gather all result part tensor shape
+    shape_tensor = torch.tensor(part_tensor.shape, device='cuda')
+    shape_list = [shape_tensor.clone() for _ in range(world_size)]
+    dist.all_gather(shape_list, shape_tensor)
+    # padding result part tensor to max length
+    shape_max = torch.tensor(shape_list).max()
+    part_send = torch.zeros(shape_max, dtype=torch.uint8, device='cuda')
+    part_send[:shape_tensor[0]] = part_tensor
+    part_recv_list = [
+        part_tensor.new_zeros(shape_max) for _ in range(world_size)
+    ]
+    # gather all result part
+    dist.all_gather(part_recv_list, part_send)
 
-    def __len__(self):
-        return 20000
+    if rank == 0:
+        part_list = []
+        for recv, shape in zip(part_recv_list, shape_list):
+            part_list.append(
+                pickle.loads(recv[:shape[0]].cpu().numpy().tobytes()))
+        # sort the results
+        ordered_results = []
+        for res in zip(*part_list):
+            ordered_results.extend(list(res))
+        # the dataloader may pad some samples
+        ordered_results = ordered_results[:size]
+        return ordered_results
 
 
 class CovidInferenceImageDataset(Dataset):
@@ -102,7 +129,8 @@ if __name__ == "__main__":
                                      init_learning_rate=0,
                                      weight_decay=0,
                                      loss="None",
-                                     is_testing=True
+                                     is_testing=True,
+                                     output_path=save_dir
                                      )
 
     # dataloader
@@ -142,17 +170,25 @@ if __name__ == "__main__":
         outputs: List[Tuple[List[str], torch.Tensor]] = trainer.predict(
             model=model,
             dataloaders=dataloader,
-            return_predictions=True,
+            return_predictions=False,
             ckpt_path=final_model_ckpt_path
         )
-        img_names = list(chain.from_iterable([o[0] for o in outputs]))
-        predictions = list(torch.cat([o[1] for o in outputs], dim=0).detach().cpu().numpy())
-
+    
+    expected_outputs = [save_dir / f"gpu_{rank}_prediction.csv" for rank in range(4)]
+    all_image_names = []
+    all_preds = []
+    for output_file in expected_outputs:
+        with open(output_file, "r") as f:
+            csv_reader = csv.DictReader(f)
+            for row in csv_reader:
+                all_image_names.append(row["image"])
+                all_preds.append(row["prediction"])
+       
     with open(os.path.join(data_dir, "predictions.csv"), "w") as f:
         csv_writer = csv.writer(f)
         csv_writer.writerow(["image", "prediction"])
-        for img_name, prediction in zip(img_names, predictions):
-            csv_writer.writerow([Path(img_name).name, prediction])
+        for img_name, prediction in zip(all_image_names, all_preds):
+            csv_writer.writerow([img_name, prediction])
 
     if test_run == "test":
         sys.exit()

@@ -1,7 +1,11 @@
-import timm
+import csv
+from pathlib import Path
 
-from typing import Optional, List, Tuple
-from abc import abstractmethod
+import timm
+import itertools
+
+from typing import Optional, List, Tuple, Union
+import torch.distributed as dist
 import torch
 import pytorch_lightning as pl
 
@@ -41,6 +45,7 @@ class BaseClassificationModule(pl.LightningModule):
         weight_decay: float,
         loss: str,
         is_testing: bool = False,
+        output_path: Union[Path, None] = None
     ):
         super().__init__()
         self.epochs = epochs
@@ -48,6 +53,9 @@ class BaseClassificationModule(pl.LightningModule):
         self.init_lr = init_learning_rate
         self.wd = weight_decay
         self.model = self.create_module(architecture, pretrained)
+        
+        if output_path is not None:
+            self.output_path = output_path
 
         if not is_testing:
             self.loss = self.create_loss(loss)
@@ -86,6 +94,20 @@ class BaseClassificationModule(pl.LightningModule):
         img_names, imgs = batch
         preds = self.model(imgs)
         return img_names, preds.argmax(dim=-1)
+    
+    def on_predict_epoch_end(self, results: Tuple[List[str], List[torch.Tensor]]):
+        img_names = list(itertools.chain.from_iterable([o[0] for o in results]))
+        predictions = list(
+            torch.cat([o[1] for o in results], dim=0).detach().cpu().numpy()
+            )
+        rank = dist.get_rank()
+        output_path = self.output_path / f"gpu_{rank}_prediction.csv"
+        with open(output_path, "w") as f:
+            csv_writer = csv.writer(f)
+            csv_writer.writerow(["image", "prediction"])
+            for img_name, prediction in zip(img_names, predictions):
+                csv_writer.writerow([Path(img_name).name, prediction])
+        return
 
     def get_num_classes(self) -> int:
         """
