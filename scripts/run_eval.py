@@ -99,10 +99,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--ckpt_path",
         type=str,
-        default="/hkfs/work/workspace/scratch/im9193-H1/checkpoints/logs/"\
+        default="/hkfs/work/workspace/scratch/im9193-H1/checkpoints/logs/"
         "resnet18_pre_noNormAugPlusPostFix_ddp/version_1/checkpoints/epoch=99-step=49399.ckpt",
     )
-    
+
     args = parser.parse_args()
 
     # GPUS: int = args.num_gpu  # N_GPUS
@@ -208,7 +208,7 @@ if __name__ == "__main__":
 
     if GPUS > 1:
         dist.barrier()
-    if GPUS== 1 or dist.get_rank() == 0:
+    if GPUS == 1 or dist.get_rank() == 0:
         expected_outputs = [Path(save_dir) / f"gpu_{rank}_prediction.csv" for rank in range(4)]
         all_image_names = []
         all_preds = []
