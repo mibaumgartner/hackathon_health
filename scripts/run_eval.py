@@ -95,18 +95,21 @@ if __name__ == "__main__":
              "and the imgs dir is!",
         default="/hkfs/work/workspace/scratch/im9193-H1/eval_data",
     )
-
-    parser.add_argument("-nw", "--num_workers", default=32, type=int, nargs="?")
-    parser.add_argument("-bs", "--batch_size", default=128, type=int, nargs="?")
-    parser.add_argument("-ngpu", "--num_gpu", default=4, type=int, nargs="?")
-
+    
+    parser.add_argument(
+        "--ckpt_path",
+        type=str,
+        default="/hkfs/work/workspace/scratch/im9193-H1/checkpoints/logs/"\
+        "resnet18_pre_noNormAugPlusPostFix_ddp/version_1/checkpoints/epoch=99-step=49399.ckpt",
+    )
+    
     args = parser.parse_args()
 
     # GPUS: int = args.num_gpu  # N_GPUS
-    WORKERS: int = args.num_workers  # 152/4 38 --> 32
-    BS: int = args.batch_size  # BatchSize
+    WORKERS: int = 32
+    BS: int = 64
     ACCELERATOR = "gpu"
-    GPUS = args.num_gpu
+    GPUS = 4
     PRECISION = 16
     BENCHMARK = True
     DETERMINISTIC = False
@@ -179,7 +182,12 @@ if __name__ == "__main__":
     all_preds = list(
         torch.cat([o[1] for o in outputs], dim=0).detach().cpu().numpy()
     )
-    rank = dist.get_rank()
+
+    if GPUS > 1:
+        rank = dist.get_rank()
+    else:
+        rank = 0
+
     output_path = Path(save_dir) / f"gpu_{rank}_prediction.csv"
     with open(output_path, "w") as f:
         csv_writer = csv.writer(f)
@@ -197,8 +205,9 @@ if __name__ == "__main__":
     #             all_image_names.append(row["image"])
     #             all_preds.append(row["prediction"])
 
-    dist.barrier()
-    if dist.get_rank() == 0:
+    if GPUS > 1:
+        dist.barrier()
+    if GPUS== 1 or dist.get_rank() == 0:
         expected_outputs = [Path(save_dir) / f"gpu_{rank}_prediction.csv" for rank in range(4)]
         all_image_names = []
         all_preds = []

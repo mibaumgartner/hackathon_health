@@ -49,6 +49,7 @@ def main():
     parser.add_argument("-lr", "--learning_rate", default=1e-4, type=float, nargs="?")
     parser.add_argument("-loss", "--loss_name", default="CE", type=str, nargs="?")
     parser.add_argument("-pt", "--pretrained", default=True, type=str2bool, nargs="?")
+    parser.add_argument("--train_last_n", default=1, type=int, nargs="?")
     parser.add_argument(
         "-e",
         "--epochs",
