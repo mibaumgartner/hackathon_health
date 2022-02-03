@@ -122,17 +122,18 @@ def main():
         kwargs["strategy"] = "ddp"
 
     print("Start Training")
-    
+
     # TODO:
     # gradient_clip_val=12.0 ?
     # reload_dataloaders_every_n_epochs: int = 0 by default, means reloading every epoch - change?
     # sync_batchnorm False by default, change?
     # add tracking of grad norm? -> track_grad_norm 2 for l2
-    # maybe sync validation logging: https://pytorch-lightning.readthedocs.io/en/stable/advanced/multi_gpu.html#synchronize-validation-and-test-logging
-    
+    # maybe sync validation logging:
+    # https://pytorch-lightning.readthedocs.io/en/stable/advanced/multi_gpu.html#synchronize-validation-and-test-logging
+
     # # Simulate DDP for debugging on your GPU-less laptop
     # trainer = Trainer(accelerator="cpu", strategy="ddp", num_processes=2)
-    
+
     trainer = pl.Trainer(
         gpus=GPUS,
         accelerator=ACCELERATOR,
