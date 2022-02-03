@@ -57,7 +57,6 @@ def main():
         "--epochs",
         default=100,
         type=int,
-        help="Name of the ModelTrainer, basically the different Dataset splits.",
     )
     parser.add_argument("-nw", "--num_workers", default=16, type=int, nargs="?")
     parser.add_argument("-bs", "--batch_size", default=32, type=int, nargs="?")
@@ -123,13 +122,24 @@ def main():
         kwargs["strategy"] = "ddp"
 
     print("Start Training")
+    
+    # TODO:
+    # gradient_clip_val=12.0 ?
+    # reload_dataloaders_every_n_epochs: int = 0 by default, means reloading every epoch - change?
+    # sync_batchnorm False by default, change?
+    # add tracking of grad norm? -> track_grad_norm 2 for l2
+    # maybe sync validation logging: https://pytorch-lightning.readthedocs.io/en/stable/advanced/multi_gpu.html#synchronize-validation-and-test-logging
+    
+    # # Simulate DDP for debugging on your GPU-less laptop
+    # trainer = Trainer(accelerator="cpu", strategy="ddp", num_processes=2)
+    
     trainer = pl.Trainer(
         gpus=GPUS,
         accelerator=ACCELERATOR,
         precision=PRECISION,
         benchmark=BENCHMARK,
         deterministic=DETERMINISTIC,
-        # callbacks=callbacks,
+        # callbacks=callbacks, # TODO: add top3 weights callback?
         logger=mllogger,
         max_epochs=MAX_EPOCHS,
         progress_bar_refresh_rate=None,
