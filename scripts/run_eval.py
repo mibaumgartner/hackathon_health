@@ -106,7 +106,7 @@ if __name__ == "__main__":
     WORKERS: int = args.num_workers  # 152/4 38 --> 32
     BS: int = args.batch_size  # BatchSize
     ACCELERATOR = "gpu"
-    GPUS = 1
+    GPUS = args.num_gpu
     PRECISION = 16
     BENCHMARK = True
     DETERMINISTIC = False
