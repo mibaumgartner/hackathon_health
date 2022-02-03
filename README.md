@@ -17,7 +17,7 @@ pip install .
 Inference can be run with the following command:
 
 ```bash
-sbatch eval_conda.sh --save_dir [dir to save results] --data_dir [directory with csv file and img dir]--ckpt_path [path to checkpoint]
+sbatch eval_conda.sh --save_dir [dir to save results] --csv_filepath [Filepath of csv] --data_dir [directory containing imgs of csv file] --ckpt_path [path to checkpoint]
 ```
 
 Details:
