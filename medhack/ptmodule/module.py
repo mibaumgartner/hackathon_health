@@ -53,7 +53,7 @@ class BaseClassificationModule(pl.LightningModule):
         self.init_lr = init_learning_rate
         self.wd = weight_decay
         self.model = self.create_module(architecture, pretrained)
-        
+
         if output_path is not None:
             self.output_path = output_path
 
@@ -94,12 +94,12 @@ class BaseClassificationModule(pl.LightningModule):
         img_names, imgs = batch
         preds = self.model(imgs)
         return img_names, preds.argmax(dim=-1)
-    
+
     def on_predict_epoch_end(self, results: Tuple[List[str], List[torch.Tensor]]):
         img_names = list(itertools.chain.from_iterable([o[0] for o in results]))
         predictions = list(
             torch.cat([o[1] for o in results], dim=0).detach().cpu().numpy()
-            )
+        )
         rank = dist.get_rank()
         output_path = self.output_path / f"gpu_{rank}_prediction.csv"
         with open(output_path, "w") as f:
