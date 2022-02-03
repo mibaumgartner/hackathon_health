@@ -84,15 +84,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "--save_dir",
         type=str,
-        help="Directory where weights and results are saved",
+        help="Directory where predictions will be saved to as 'predictions.csv'",
         default="/hkfs/work/workspace/scratch/im9193-H1/eval_data",
     )
 
     parser.add_argument(
         "--data_dir",
         type=str,
-        help="Directory containing the CSV file you want to predict "
-             "and the imgs dir is!",
+        help="Directory that contains (a 'test.csv' that contains only 'image' names;"
+             "The corresponding images are located '{data_dir}/imgs')",
         default="/hkfs/work/workspace/scratch/im9193-H1/eval_data",
     )
 
